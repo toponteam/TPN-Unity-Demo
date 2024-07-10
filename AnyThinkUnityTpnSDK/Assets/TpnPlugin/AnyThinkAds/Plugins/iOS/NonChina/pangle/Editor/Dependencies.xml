@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><dependencies>
-    <iosPods>
-        <iosPod name="TPNSDKPangleSDKAdapter" version="6.2.98.1" />
-    </iosPods>
-</dependencies>
+<?xml version="1.0" encoding="utf-8"?>
+        <dependencies>
+            <iosPods>
+                <iosPod name="TPNPangleSDKAdapter" version="6.3.53" />
+            </iosPods>
+        </dependencies>

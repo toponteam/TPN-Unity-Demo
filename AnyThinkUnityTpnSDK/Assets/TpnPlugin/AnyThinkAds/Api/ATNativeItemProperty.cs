@@ -46,13 +46,12 @@ namespace AnyThinkAds.Api{
 			this.y = y;
 			this.width = width;
 			this.height = height;
-
 			this.backgroundColor = backgroundColor;
 			this.textColor = textColor;
 			this.textSize = textSize;
             #if UNITY_ANDROID
                 this.usesPixel = true;
-            #else
+            #else 
                 this.usesPixel = false;
             #endif
 		}			

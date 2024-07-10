@@ -1,5 +1,5 @@
 <dependencies>
     <androidPackages>
-        <androidPackage spec="com.yandex.android:mobileads:6.4.1"/>
+        <androidPackage spec="com.yandex.android:mobileads:7.0.1"/>
     </androidPackages>
 </dependencies>

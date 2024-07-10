@@ -21,20 +21,18 @@ namespace AnyThinkAds.Api
             this.y = y;
             this.width = width;
             this.height = height;
-            // this.usesPixel = false;
-            #if UNITY_ANDROID
-                this.usesPixel = true;
-            #else
-                this.usesPixel = false;
-            #endif
         }
 
         public int x = 0;
         public int y = 0;
         public int width = 0;
         public int height = 0;
-        public bool usesPixel = false;
-
+        // public bool usesPixel = false;
+        #if UNITY_ANDROID
+            public bool usesPixel = true;
+        #else 
+            public bool usesPixel = false;
+        #endif
     }
 
     public class ATSize
@@ -50,18 +48,14 @@ namespace AnyThinkAds.Api
         {
             this.width = width;
             this.height = height;
-            #if UNITY_ANDROID
-                this.usesPixel = true;
-            #else
-                this.usesPixel = false;
-            #endif
         }
 
         public int width = 0;
         public int height = 0;
+
         #if UNITY_ANDROID
             public bool usesPixel = true;
-        #else
+        #else 
             public bool usesPixel = false;
         #endif
     }

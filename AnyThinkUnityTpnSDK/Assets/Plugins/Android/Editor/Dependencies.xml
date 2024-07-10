@@ -1,0 +1,8 @@
+<dependencies>
+    <androidPackages>
+        <repositories>
+            <repository>https://jfrog.anythinktech.com/artifactory/debugger</repository>
+        </repositories>
+        <androidPackage spec="com.anythink.sdk:debugger-ui:1.0.5"/>
+    </androidPackages>
+</dependencies>

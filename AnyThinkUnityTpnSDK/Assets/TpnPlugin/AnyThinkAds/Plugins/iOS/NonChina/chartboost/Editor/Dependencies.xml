@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><dependencies>
-    <iosPods>
-        <iosPod name="TPNSDKiOS/TPNSDKiOSChartboostAdapter" version="6.2.98" />
-    </iosPods>
-</dependencies>
+<?xml version="1.0" encoding="utf-8"?>
+        <dependencies>
+            <iosPods>
+                <iosPod name="TPNChartboostSDKAdapter" version="6.3.53" />
+            </iosPods>
+        </dependencies>
