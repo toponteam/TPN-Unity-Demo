@@ -10,6 +10,7 @@ namespace AnyThinkAds.Common
         void initSDK(string appId, string appKey);
         void initSDK(string appId, string appKey, ATSDKInitListener listener);
         void showDebuggerUI();
+        void showDebuggerUI(string debugKey);
         void getUserLocation(ATGetUserLocationListener listener);
         void setGDPRLevel(int level);
         void showGDPRAuth();

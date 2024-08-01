@@ -16,7 +16,7 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
 
     public class ATConfig
     {
-public static string PLUGIN_VERSION = "2.1.1";
+public static string PLUGIN_VERSION = "2.1.3";
 public static bool isDebug = false;
 
         public static int PLUGIN_TYPE = 2;
@@ -300,17 +300,26 @@ public static bool isDebug = false;
         //获取admob app id
         public static string getAdmobAppIdByOs(int os) {
             var pluginSettingData = getPluginSettingData();
+            if (pluginSettingData == null) {
+                return "";
+            }
             var settingData = pluginSettingData.getCountrySettingData();
             return settingData.getAdmobAppId(os);
         }
 
         public static bool enableAndroidX() {
             var pluginSettingData = getPluginSettingData();
+            if (pluginSettingData == null) {
+                return false;
+            }
             return pluginSettingData.getCountrySettingData().androidXSetting == 1;
         }
 
         public static bool isDefaultAndroidX() {
             var pluginSettingData = getPluginSettingData();
+            if (pluginSettingData == null) {
+                return false;
+            }
             return pluginSettingData.getCountrySettingData().androidXSetting == 0;
         }
 

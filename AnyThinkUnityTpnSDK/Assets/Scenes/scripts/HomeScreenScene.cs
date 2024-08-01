@@ -59,7 +59,11 @@ public class HomeScreenScene : MonoBehaviour, ATSDKInitListener
 
     private void OpenDebuggerUITool()
     {
-        ATSDKAPI.showDebuggerUI();
+        // ATSDKAPI.showDebuggerUI();
+
+        // DebuggerUI Tools supports online ad placement testing starting from version 1.0.8.
+        // "abbfb0a2699ff81561f6905a5c8585275fc166c4" is a Debug Key, used for online ID testing. You can get it from Backstage -> Account Management -> Key
+        ATSDKAPI.showDebuggerUI("abbfb0a2699ff81561f6905a5c8585275fc166c4");
     }
 
     private void JumpToAutomicPage()

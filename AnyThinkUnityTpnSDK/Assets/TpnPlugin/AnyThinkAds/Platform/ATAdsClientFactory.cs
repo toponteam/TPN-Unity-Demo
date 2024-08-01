@@ -163,6 +163,7 @@ namespace AnyThinkAds
         public void setWXStatus(bool install) { }
         public void setLocation(double longitude, double latitude) { }
         public void showDebuggerUI() {}
+        public void showDebuggerUI(string debugKey) {}
     }
 
     class UnityBannerClient:IATBannerAdClient

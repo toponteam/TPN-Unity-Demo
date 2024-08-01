@@ -200,5 +200,10 @@ namespace AnyThinkAds.iOS {
             Debug.Log("Unity:ATSDKAPIClient::showDebuggerUI()");
             ATManager.showDebuggerUI();
         }
+
+        public void showDebuggerUI(string debugKey) 
+        {
+            //TODO 待iOS支持线上测试的SDK版本上线
+        }
 	}
 }

@@ -93,6 +93,11 @@ namespace AnyThinkAds.Api
             client.showDebuggerUI();
         }
 
+        public static void showDebuggerUI(string debugKey)
+        {
+            client.showDebuggerUI(debugKey);
+        }
+
         public static void setGDPRLevel(int level)
         {
             client.setGDPRLevel(level);

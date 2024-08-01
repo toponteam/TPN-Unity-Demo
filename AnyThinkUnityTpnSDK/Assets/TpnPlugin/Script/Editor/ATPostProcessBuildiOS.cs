@@ -47,13 +47,46 @@ namespace AnyThink.Scripts.Editor
                 dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "StartAppSDK/StartApp.xcframework"));
                 dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "BigoADS/BigoADS/BigoADS.xcframework"));
                 dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "BigoADS/BigoADS/OMSDK_Bigosg.xcframework"));
-                dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "HyBid/PubnativeLite/PubnativeLite/OMSDK-1.3.29/OMSDK_Pubnativenet.xcframework"));
                 dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "Fyber_Marketplace_SDK/IASDKCore/IASDKCore.xcframework"));
-
+                dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "InMobiSDK/InMobiSDK.xcframework"));
+                //pubnative
+                string pubNativePath = Path.Combine("Pods/", "HyBid/PubnativeLite/PubnativeLite");
+                if (Directory.Exists(pubNativePath)) {
+                    // 获取所有以"OMSDK-"开头的子目录
+                    string[] subDirectories = Directory.GetDirectories(pubNativePath, "OMSDK-*");
+                    if (subDirectories.Length > 0) {
+                        string versionDirectoryName = subDirectories[0];
+                        dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "HyBid/PubnativeLite/PubnativeLite/" + versionDirectoryName + "/OMSDK_Pubnativenet.xcframework"
+                    }
+                }
+                //applovin
+                string applovinPath = Path.Combine("Pods/", "AppLovinSDK");
+                if (Directory.Exists(applovinPath)) {
+                    // 获取所有以"applovin-ios-sdk-"开头的子目录
+                    string[] applovinSubDirectories = Directory.GetDirectories(applovinPath, "applovin-ios-sdk-*");
+                    if (applovinSubDirectories.Length > 0) {
+                        string applovinVersionDirectoryName = applovinSubDirectories[0];
+                        dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "AppLovinSDK/" + applovinVersionDirectoryName + "/AppLovinSDK.xcframework"));
+                    }
+                }
 
                 return dynamicLibraryPathsToEmbed;
             }
         }
+
+        //读取本地已安装network的版本号:network_data.json
+        // private static string getNetworkVersion(string networkDataJsonFilePath)
+        // {
+        //     if (!File.Exists(networkDataJsonFilePath)) {
+        //         return "";
+        //     }
+        //     string jsonData = File.ReadAllText(networkDataJsonFilePath);
+        //     var networkLocalData = JsonUtility.FromJson<NetworkLocalData>(a_json);
+        //     if (networkLocalData != null) {
+        //         return networkLocalData.version;
+        //     }
+        //     retrun "";
+        // }
 
         private static List<string> BunldePathsToAdd {
             get {

@@ -22,6 +22,12 @@ dependencyResolutionManagement {
             url "https://jfrog.anythinktech.com/artifactory/debugger" // Assets/Plugins/Android/Editor/Dependencies.xml:5
         }
         maven {
+            url "https://jfrog.anythinktech.com/artifactory/overseas_sdk" // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/Editor/Dependencies.xml:5
+        }
+        maven {
+            url "https://dl.appnext.com" // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/appnext/Editor/Dependencies.xml:5
+        }
+        maven {
             url "https://cboost.jfrog.io/artifactory/chartboost-ads" // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/chartboost/Editor/Dependencies.xml:6
         }
         maven {

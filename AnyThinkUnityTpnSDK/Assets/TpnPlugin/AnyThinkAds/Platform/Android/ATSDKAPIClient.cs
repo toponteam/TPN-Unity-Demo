@@ -373,11 +373,15 @@ namespace AnyThinkAds.Android
         }
 
         public void showDebuggerUI() {
+            showDebuggerUI("");
+        }
+
+        public void showDebuggerUI(string debugKey) {
             try
             {
                 if (this.sdkInitHelper != null)
                 {
-                    this.sdkInitHelper.Call("showDebuggerUI");
+                    this.sdkInitHelper.Call("showDebuggerUI", debugKey);
                 }
             }
             catch (System.Exception e)
