@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
         <dependencies>
             <iosPods>
-                <iosPod name="TPNkMyTargetSDKAdapter" version="6.3.53" />
+                <iosPod name="TPNMyTargetSDKAdapter" version="6.3.53" />
             </iosPods>
         </dependencies>
