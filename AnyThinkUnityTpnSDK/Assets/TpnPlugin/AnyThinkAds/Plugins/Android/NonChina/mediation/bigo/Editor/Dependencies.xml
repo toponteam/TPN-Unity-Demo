@@ -1,5 +1,0 @@
-<dependencies>
-    <androidPackages>
-        <androidPackage spec="com.bigossp:bigo-ads:4.8.0"/>
-    </androidPackages>
-</dependencies>

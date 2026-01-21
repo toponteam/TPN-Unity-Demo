@@ -1,0 +1,132 @@
+apply plugin: 'com.android.library'
+apply from: '../shared/keepUnitySymbols.gradle'
+**APPLY_PLUGINS**
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+// Android Resolver Dependencies Start
+    // implementation 'androidx.annotation:annotation:1.0.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/facebook/Editor/Dependencies.xml:4
+    implementation 'androidx.annotation:annotation:1.2.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/kwai/Editor/Dependencies.xml:8
+    implementation 'androidx.appcompat:appcompat:1.6.1' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/kwai/Editor/Dependencies.xml:6
+    implementation 'androidx.browser:browser:1.4.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/Editor/Dependencies.xml:4
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.1' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/nend/Editor/Dependencies.xml:7
+    implementation 'androidx.media3:media3-exoplayer:1.0.0-alpha01' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/kwai/Editor/Dependencies.xml:5
+    implementation 'androidx.preference:preference:1.1.1' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/nend/Editor/Dependencies.xml:9
+    implementation 'androidx.recyclerview:recyclerview:1.1.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/gtm/Editor/Dependencies.xml:7
+    implementation 'co.ogury:ogury-sdk:5.2.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/ogury/Editor/Dependencies.xml:6
+    implementation 'com.adcolony:sdk:4.8.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/adcolony/Editor/Dependencies.xml:3
+    implementation 'com.amazon.android:aps-sdk:11.0.1' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/amazon/Editor/Dependencies.xml:3
+    implementation 'com.anythink.sdk:debugger-ui-tpn:1.1.2' // Assets/Plugins/Android/Editor/Dependencies.xml:6
+    implementation 'com.applovin:applovin-sdk:13.5.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/applovin/Editor/Dependencies.xml:3
+    implementation 'com.bigossp:bigo-ads:5.5.1' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/bigo/Editor/Dependencies.xml:3
+    implementation 'com.chartboost:chartboost-mediation-adapter-chartboost:4.9.8.1.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/chartboost/Editor/Dependencies.xml:9
+    implementation 'com.chartboost:chartboost-mediation-sdk:4.9.2' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/chartboost/Editor/Dependencies.xml:8
+    implementation 'com.chartboost:chartboost-sdk:9.10.2' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/chartboost/Editor/Dependencies.xml:7
+    implementation 'com.facebook.android:audience-network-sdk:6.20.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/facebook/Editor/Dependencies.xml:3
+    implementation 'com.fyber:marketplace-sdk:8.3.7' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/fyber/Editor/Dependencies.xml:3
+    implementation 'com.google.android.gms:play-services-ads:24.7.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/admob/Editor/Dependencies.xml:3
+    // implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/vungle/Editor/Dependencies.xml:5
+    implementation 'com.google.android.gms:play-services-ads-identifier:18.2.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/pangle/Editor/Dependencies.xml:7
+    implementation 'com.google.android.gms:play-services-appset:16.0.2' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/ironsource/Editor/Dependencies.xml:7
+    implementation 'com.google.android.gms:play-services-basement:18.1.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/vungle/Editor/Dependencies.xml:4
+    implementation 'com.google.android.material:material:1.2.1' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/kwai/Editor/Dependencies.xml:7
+    implementation 'com.huawei.hms:ads-lite:13.4.78.301' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/huawei/Editor/Dependencies.xml:6
+    implementation 'com.iabtcf:iabtcf-decoder:2.0.10' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/amazon/Editor/Dependencies.xml:4
+    implementation 'com.inmobi.monetization:inmobi-ads-kotlin:10.8.7' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/inmobi/Editor/Dependencies.xml:3
+    implementation 'com.ironsource.sdk:mediationsdk:8.10.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/ironsource/Editor/Dependencies.xml:6
+    implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/chartboost/Editor/Dependencies.xml:10
+    implementation 'com.maio:android-sdk:1.1.16@aar' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/maio/Editor/Dependencies.xml:6
+    implementation 'com.mbridge.msdk.oversea:mbridge_android_sdk:17.0.21' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/gtm/Editor/Dependencies.xml:6
+    implementation 'com.mi.ads:columbus-sdk:4.0.4.6' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/xiaomi/Editor/Dependencies.xml:3
+    implementation 'com.my.target:mytarget-sdk:5.27.1' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/mytarget/Editor/Dependencies.xml:3
+    implementation 'com.pangle.global:pag-sdk:7.6.0.5' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/pangle/Editor/Dependencies.xml:6
+    implementation 'com.smaato.android.sdk:smaato-sdk:22.7.2' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/smaato/Editor/Dependencies.xml:6
+    implementation 'com.smaato.android.sdk:smaato-sdk-banner:22.7.2' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/smaato/Editor/Dependencies.xml:7
+    implementation 'com.smaato.android.sdk:smaato-sdk-in-app-bidding:22.7.2' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/smaato/Editor/Dependencies.xml:11
+    implementation 'com.smaato.android.sdk:smaato-sdk-interstitial:22.7.2' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/smaato/Editor/Dependencies.xml:8
+    implementation 'com.smaato.android.sdk:smaato-sdk-native:22.7.2' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/smaato/Editor/Dependencies.xml:10
+    implementation 'com.smaato.android.sdk:smaato-sdk-rewarded-ads:22.7.2' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/smaato/Editor/Dependencies.xml:9
+    implementation 'com.smartdigimkttech.sdk:smartdigimkttech-sdk:6.5.48' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/secmtp_base/sdm/Editor/Dependencies.xml:3
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.10.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/chartboost/Editor/Dependencies.xml:11
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/chartboost/Editor/Dependencies.xml:12
+    implementation 'com.squareup.retrofit2:converter-scalars:2.9.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/chartboost/Editor/Dependencies.xml:13
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/chartboost/Editor/Dependencies.xml:14
+    implementation 'com.startapp:inapp-sdk:5.2.4' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/startapp/Editor/Dependencies.xml:3
+    implementation 'com.tapjoy:tapjoy-android-sdk:12.10.0@aar' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/tapjoy/Editor/Dependencies.xml:6
+    implementation 'com.vungle:vungle-ads:7.6.1' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/vungle/Editor/Dependencies.xml:3
+    implementation 'com.yandex.android:mobileads:7.15.1' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/yandex/Editor/Dependencies.xml:3
+    implementation 'io.bidmachine:ads:3.3.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/bidmachine/Editor/Dependencies.xml:6
+    implementation 'io.github.kwainetwork:adApi:1.2.21' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/kwai/Editor/Dependencies.xml:3
+    implementation 'io.github.kwainetwork:adImpl:1.2.21' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/kwai/Editor/Dependencies.xml:4
+    implementation 'net.kidoz.sdk:kidoz-android-native:8.9.7' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/kidoz/Editor/Dependencies.xml:3
+    implementation 'net.nend.android:nend-sdk:7.0.3' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/nend/Editor/Dependencies.xml:6
+    implementation 'net.pubnative:hybid.sdk:3.6.2' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/pubnative/Editor/Dependencies.xml:6
+    implementation 'org.greenrobot:eventbus:3.3.1' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/kidoz/Editor/Dependencies.xml:4
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.10' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/kwai/Editor/Dependencies.xml:9
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/chartboost/Editor/Dependencies.xml:15
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/chartboost/Editor/Dependencies.xml:16
+// Android Resolver Dependencies End
+**DEPS**
+}
+
+// 排除所有传递依赖中的 unity-ads，只使用 Unity 包自带的本地 UnityAds.aar
+configurations.all {
+    exclude group: 'com.unity3d.ads', module: 'unity-ads'
+}
+
+// Android Resolver Exclusions Start
+android {
+  packagingOptions {
+      exclude ('/lib/arm64-v8a/*' + '*')
+      exclude ('/lib/armeabi/*' + '*')
+      exclude ('/lib/mips/*' + '*')
+      exclude ('/lib/mips64/*' + '*')
+      exclude ('/lib/x86/*' + '*')
+      exclude ('/lib/x86_64/*' + '*')
+  }
+}
+// Android Resolver Exclusions End
+android {
+    compileSdk **APIVERSION**
+    buildToolsVersion '**BUILDTOOLS**'
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+**DEFAULT_CONFIG_SETUP**
+        minSdk **MINSDK**
+        targetSdk **TARGETSDK**
+        ndk {
+            debugSymbolLevel **DEBUGSYMBOLLEVEL**
+            abiFilters **ABIFILTERS**
+        }
+        versionCode **VERSIONCODE**
+        versionName '**VERSIONNAME**'
+        consumerProguardFiles 'proguard-unity.txt'**USER_PROGUARD**
+    }
+
+    lint {
+        abortOnError false
+    }
+
+    androidResources {
+        noCompress = **BUILTIN_NOCOMPRESS** + unityStreamingAssets.tokenize(', ')
+        ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~"
+    }**PACKAGING**
+}
+
+// 禁用重复类检查任务（解决 Unity Ads 和 billing 库版本冲突）
+afterEvaluate {
+    tasks.matching { 
+        it.name.contains("checkReleaseDuplicateClasses") || 
+        it.name.contains("checkDebugDuplicateClasses") 
+    }.all {
+        enabled = false
+    }
+}**REPOSITORIES**
+**IL_CPP_BUILD_SETUP**
+**SOURCE_BUILD_SETUP**
+**EXTERNAL_SOURCES**

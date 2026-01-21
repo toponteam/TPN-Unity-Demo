@@ -1,0 +1,5 @@
+<dependencies>
+    <androidPackages>
+        <androidPackage spec="com.smartdigimkttech.sdk:smartdigimkttech-sdk:6.5.48"/>
+    </androidPackages>
+</dependencies>

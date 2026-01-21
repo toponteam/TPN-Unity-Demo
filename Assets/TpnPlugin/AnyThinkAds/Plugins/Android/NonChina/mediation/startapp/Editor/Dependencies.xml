@@ -1,0 +1,5 @@
+<dependencies>
+    <androidPackages>
+        <androidPackage spec="com.startapp:inapp-sdk:5.2.4"/>
+    </androidPackages>
+</dependencies>

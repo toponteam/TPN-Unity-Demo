@@ -1,0 +1,74 @@
+apply plugin: 'com.android.library'
+apply from: '../shared/keepUnitySymbols.gradle'
+**APPLY_PLUGINS**
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+// Android Resolver Dependencies Start
+    implementation 'android.arch.persistence:db-framework:1.1.1' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/oppo/Editor/Dependencies.xml:4
+    implementation 'androidx.appcompat:appcompat:1.0.2' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/oppo/Editor/Dependencies.xml:8
+    implementation 'androidx.recyclerview:recyclerview:1.0.0' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/oppo/Editor/Dependencies.xml:7
+    implementation 'com.alibaba:fastjson:1.1.76.android' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/tanx/Editor/Dependencies.xml:7
+    // implementation 'com.android.support.constraint:constraint-layout:2.0.1' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/aqy/Editor/Dependencies.xml:3
+    implementation 'com.android.support.constraint:constraint-layout:2.0.4' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/tanx/Editor/Dependencies.xml:6
+    implementation 'com.android.support:appcompat-v7:28.0.0' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/Editor/Dependencies.xml:3
+    implementation 'com.android.support:cardview-v7:21.0.0' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/meishu/Editor/Dependencies.xml:5
+    implementation 'com.android.support:design:28.0.0' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/kuaishou/Editor/Dependencies.xml:3
+    implementation 'com.android.support:palette-v7:28.0.0' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/oppo/Editor/Dependencies.xml:5
+    implementation 'com.android.support:recyclerview-v7:28.0.0' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/vivo/Editor/Dependencies.xml:3
+    implementation 'com.anythink.sdk:debugger-ui:1.0.5' // Assets/Plugins/Android/Editor/Dependencies.xml:6
+    implementation 'com.github.bumptech.glide:glide:4.9.0' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/tap/Editor/Dependencies.xml:4
+    implementation 'com.google.code.gson:gson:2.8.5' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/meishu/Editor/Dependencies.xml:4
+    // implementation 'com.squareup.okhttp3:okhttp:3.12.1' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/tap/Editor/Dependencies.xml:3
+    implementation 'com.squareup.okhttp3:okhttp:4.8.1' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/tanx/Editor/Dependencies.xml:8
+    implementation 'com.squareup.okio:okio:2.5.0' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/oppo/Editor/Dependencies.xml:3
+    implementation 'org.jetbrains.kotlin:kotlin-android-extensions-runtime:1.3.72' // Assets/AnyThinkPlugin/AnyThinkAds/Plugins/Android/China/mediation/oppo/Editor/Dependencies.xml:6
+// Android Resolver Dependencies End
+**DEPS**}
+
+// Android Resolver Exclusions Start
+android {
+  packagingOptions {
+      exclude ('/lib/arm64-v8a/*' + '*')
+      exclude ('/lib/armeabi/*' + '*')
+      exclude ('/lib/mips/*' + '*')
+      exclude ('/lib/mips64/*' + '*')
+      exclude ('/lib/x86/*' + '*')
+      exclude ('/lib/x86_64/*' + '*')
+  }
+}
+// Android Resolver Exclusions End
+android {
+    compileSdk **APIVERSION**
+    buildToolsVersion '**BUILDTOOLS**'
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+**DEFAULT_CONFIG_SETUP**
+        minSdk **MINSDK**
+        targetSdk **TARGETSDK**
+        ndk {
+            debugSymbolLevel **DEBUGSYMBOLLEVEL**
+            abiFilters **ABIFILTERS**
+        }
+        versionCode **VERSIONCODE**
+        versionName '**VERSIONNAME**'
+        consumerProguardFiles 'proguard-unity.txt'**USER_PROGUARD**
+    }
+
+    lint {
+        abortOnError false
+    }
+
+    androidResources {
+        noCompress = **BUILTIN_NOCOMPRESS** + unityStreamingAssets.tokenize(', ')
+        ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~"
+    }**PACKAGING**
+}**REPOSITORIES**
+**IL_CPP_BUILD_SETUP**
+**SOURCE_BUILD_SETUP**
+**EXTERNAL_SOURCES**

@@ -1,5 +1,0 @@
-<dependencies>
-    <androidPackages>
-        <androidPackage spec="com.inmobi.monetization:inmobi-ads-kotlin:10.7.4"/>
-    </androidPackages>
-</dependencies>

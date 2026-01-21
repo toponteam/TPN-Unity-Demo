@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 0
+    path: Assets/cemo.unity
+    guid: 0005e345fb0914bf19fefe2b0b4cabf9
+  - enabled: 1
+    path: Assets/Scenes/HomeScreenScene.unity
+    guid: 179ff9ea0dd8142efba6e6db994df51f
+  - enabled: 1
+    path: Assets/Scenes/AutomicRewardInterScene.unity
+    guid: ae435c66f979b4bafab24864ecafaac3
+  - enabled: 1
+    path: Assets/Scenes/AnyThinkAdDemoScene.unity
+    guid: b58f5294923f04bd1ab0c8718933374e
+  m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0

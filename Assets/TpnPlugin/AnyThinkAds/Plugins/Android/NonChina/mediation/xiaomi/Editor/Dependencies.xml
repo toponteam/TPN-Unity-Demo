@@ -1,0 +1,5 @@
+<dependencies>
+    <androidPackages>
+        <androidPackage spec="com.mi.ads:columbus-sdk:4.0.4.6"/>
+    </androidPackages>
+</dependencies>

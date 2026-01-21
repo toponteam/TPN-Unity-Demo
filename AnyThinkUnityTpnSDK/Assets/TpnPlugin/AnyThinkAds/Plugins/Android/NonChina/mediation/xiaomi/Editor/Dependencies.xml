@@ -1,9 +1,0 @@
-<dependencies>
-    <androidPackages>
-        <androidPackage spec="com.xiaomi.sdk:columbus:3.2.9.0"/>
-        <androidPackage spec="com.xiaomi.sdk:adjumper-inner:3.0.5.1"/>
-        <androidPackage spec="com.xiaomi.sdk:analytics-pubsub:4.2.2.0"/>
-        <androidPackage spec="com.xiaomi.sdk:encrypt-okhttp:2.4.1"/>
-        <androidPackage spec="com.squareup.okhttp3:okhttp:3.12.2"/>
-    </androidPackages>
-</dependencies>
