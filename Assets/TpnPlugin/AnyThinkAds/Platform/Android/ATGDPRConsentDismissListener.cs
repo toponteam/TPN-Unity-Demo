@@ -13,12 +13,28 @@ namespace AnyThinkAds.Android
             mListener = listener;
         }
 
-        public void onConsentDismiss()
+        public void onConsentDismiss(AndroidJavaObject consentDismissInfo)
         {
-            if (mListener != null)
+            if (mListener == null)
             {
-                mListener.onConsentDismiss();
+                return;
             }
+            ATConsentDismissInfo info;
+            if (consentDismissInfo == null)
+            {
+                info = ATConsentDismissInfo.Empty;
+            }
+            else
+            {
+                string msg = consentDismissInfo.Call<string>("getInfoMsg");
+                if (msg == null)
+                {
+                    msg = "";
+                }
+                int type = consentDismissInfo.Call<int>("getDismissType");
+                info = new ATConsentDismissInfo(msg, type);
+            }
+            mListener.onConsentDismiss(info);
         }
 
     }

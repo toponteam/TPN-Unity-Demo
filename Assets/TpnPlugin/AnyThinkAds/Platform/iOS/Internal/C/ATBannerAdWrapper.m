@@ -7,14 +7,15 @@
 //
 
 #import "ATBannerAdWrapper.h"
-#import <AnyThinkBanner/AnyThinkBanner.h>
+#import <AnyThinkSDK/AnyThinkSDK.h>
 #import "ATUnityUtilities.h"
 //5.6.6版本以上支持 admob 自适应banner （用到时再import该头文件）
 //#import <GoogleMobileAds/GoogleMobileAds.h>
 
-@interface ATBannerAdWrapper()<ATBannerDelegate>
+@interface ATBannerAdWrapper()<ATBannerDelegate, ATAdMultipleLoadingDelegate>
 @property(nonatomic, readonly) NSMutableDictionary<NSString*, ATBannerView*> *bannerViewStorage;
 @property(nonatomic, readonly) BOOL interstitialOrRVBeingShown;
+@property(nonatomic, strong) NSMutableDictionary *adInfoDict;
 @end
 
 static NSString *kATBannerSizeUsesPixelFlagKey = @"uses_pixel";
@@ -73,21 +74,53 @@ static NSString *kATBannerAdLoadingExtraInlineAdaptiveOrientationKey = @"inline_
         [self clearCache];
     }   else if ([selector isEqualToString:@"getValidAdCaches:"]) {
         return [self getValidAdCaches:firstObject];
-    }
+    } else if ([selector isEqualToString:@"entryScenarioWithPlacementID:scenarioID:"]) {
+        [self entryScenarioWithPlacementID:firstObject scenarioID:lastObject tkExtraJson:@""];
+    } else if ([selector isEqualToString:@"entryScenarioWithPlacementID:scenarioID:tkExtraJson:"]) {
+        [self entryScenarioWithPlacementID:firstObject scenarioID:secondObject tkExtraJson:lastObject];
+    } 
     return nil;
 }
 
 -(void) loadBannerAdWithPlacementID:(NSString*)placementID customDataJSONString:(NSString*)customDataJSONString callback:(void(*)(const char*, const char*))callback {
+    NSLog(@"iOS: ATBannerAdWrapper::loadBannerAdWithPlacementID placementID=%@ customDataJSONString=%@", placementID, customDataJSONString);
     [self setCallBack:callback forKey:placementID];
     NSMutableDictionary *extra = [NSMutableDictionary dictionary];
     if ([customDataJSONString isKindOfClass:[NSString class]] && [customDataJSONString length] > 0) {
         NSDictionary *extraDict = [NSJSONSerialization JSONObjectWithData:[customDataJSONString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:nil];
-        NSLog(@"extraDict = %@", extraDict);
+        NSLog(@"iOS: extraDict = %@", extraDict);
+
         CGFloat scale = [extraDict[kATBannerSizeUsesPixelFlagKey] boolValue] ? [UIScreen mainScreen].nativeScale : 1.0f;
         if ([extraDict[kATAdLoadingExtraBannerAdSizeKey] isKindOfClass:[NSString class]] && [[extraDict[kATAdLoadingExtraBannerAdSizeKey] componentsSeparatedByString:@"x"] count] == 2) {
             NSArray<NSString*>* com = [extraDict[kATAdLoadingExtraBannerAdSizeKey] componentsSeparatedByString:@"x"];
 
             extra[kATAdLoadingExtraBannerAdSizeKey] = [NSValue valueWithCGSize:CGSizeMake([com[0] doubleValue] / scale, [com[1] doubleValue] / scale)];
+
+            NSDictionary *atAdRequest = extraDict[@"atAdRequest"];
+            if (atAdRequest) {
+                if ([atAdRequest containsObjectForKey:@"channelSource"]) {
+                    NSInteger channelSource = [atAdRequest[@"channelSource"] integerValue];
+                    ATSDKConfiguration *sdkConfiguration = [[ATSDKConfiguration alloc] init];
+                    sdkConfiguration.adChannelSource = channelSource;
+                    [[ATAPI sharedInstance] updateSdkConfigure:sdkConfiguration];
+                }
+                NSDictionary *adxBidFloorInfo = atAdRequest[@"adxBidFloorInfo"] ? : @{};
+                NSDictionary *preLoadInfo = atAdRequest[@"preLoadInfo"] ? : @{};
+                if (adxBidFloorInfo) {
+                    NSString *bidFloor = adxBidFloorInfo[@"bidFloor"] ? : @"";
+                    NSDictionary *extraMap = adxBidFloorInfo[@"extraMap"] ? : @{};
+                    NSString *currency = adxBidFloorInfo[@"currency"] ? : @"USD";
+                }
+                
+                if (preLoadInfo) {
+                    NSString *requestId = preLoadInfo[@"requestId"] ? : @"";
+                    NSString *psId = preLoadInfo[@"psId"] ? : @"";
+                    NSString *placementId = preLoadInfo[@"placementId"] ? : @"";
+                    NSString *cpEcpmSwitch = preLoadInfo[@"cpEcpmSwitch"] ? : @"";
+                    NSString *cpEcpmTimeout = preLoadInfo[@"cpEcpmTimeout"] ? : @"";
+                }
+            }
+            
         }
         
 //        // admob 自适应banner，5.6.6版本以上支持
@@ -112,23 +145,26 @@ static NSString *kATBannerAdLoadingExtraInlineAdaptiveOrientationKey = @"inline_
     if (extra[kATAdLoadingExtraBannerAdSizeKey] == nil) {
         extra[kATAdLoadingExtraBannerAdSizeKey] = [NSValue valueWithCGSize:CGSizeMake(320.0f, 50.0f)];
     }
-    NSLog(@"extra = %@", extra);
+    NSLog(@"iOS: extra = %@", extra);
     [[ATAdManager sharedManager] loadADWithPlacementID:placementID extra:extra delegate:self];
+    [[ATAdManager sharedManager] setMultipleLoadingDelegate:self placementId:placementID];
 }
 
 -(NSString*) checkAdStatus:(NSString *)placementID {
+    NSLog(@"iOS: ATBannerAdWrapper::checkAdStatus placementID=%@", placementID);
     ATCheckLoadModel *checkLoadModel = [[ATAdManager sharedManager] checkBannerLoadStatusForPlacementID:placementID];
     NSMutableDictionary *statusDict = [NSMutableDictionary dictionary];
     statusDict[@"isLoading"] = @(checkLoadModel.isLoading);
     statusDict[@"isReady"] = @(checkLoadModel.isReady);
     statusDict[@"adInfo"] = checkLoadModel.adOfferInfo;
-    NSLog(@"ATBannerAdWrapper::statusDict = %@", statusDict);
+    NSLog(@"iOS: ATBannerAdWrapper::statusDict = %@", statusDict);
     return statusDict.jsonFilterString;
 }
 
 -(NSString*) getValidAdCaches:(NSString *)placementID {
+    NSLog(@"iOS: ATBannerAdWrapper::getValidAdCaches placementID=%@", placementID);
     NSArray *array = [[ATAdManager sharedManager] getBannerValidAdsForPlacementID:placementID];
-    NSLog(@"ATNativeAdWrapper::array = %@", array);
+    NSLog(@"iOS: ATBannerAdWrapper::getValidAdCaches array=%@", array);
     return array.jsonFilterString;
 }
 
@@ -137,14 +173,51 @@ UIEdgeInsets SafeAreaInsets_ATUnityBanner() {
 }
 
 -(void) showBannerAdWithPlacementID:(NSString*)placementID rect:(NSString*)rect extraJsonString:(NSString*)extraJsonString {
+    NSLog(@"iOS: ATBannerAdWrapper::showBannerAdWithPlacementID:rect:extraJsonString placementID=%@ rect=%@ extraJsonString=%@", placementID, rect, extraJsonString);
     dispatch_async(dispatch_get_main_queue(), ^{
         if ([rect isKindOfClass:[NSString class]] && [rect dataUsingEncoding:NSUTF8StringEncoding] != nil) {
-            NSDictionary *extraDict = ([extraJsonString isKindOfClass:[NSString class]] && [extraJsonString dataUsingEncoding:NSUTF8StringEncoding] != nil) ? [NSJSONSerialization JSONObjectWithData:[extraJsonString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:nil] : nil;
+            NSDictionary *showCongifDict = ([extraJsonString isKindOfClass:[NSString class]] && [extraJsonString dataUsingEncoding:NSUTF8StringEncoding] != nil) ? [NSJSONSerialization JSONObjectWithData:[extraJsonString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:nil] : nil;
+            
+            NSString *scenarioId = showCongifDict[@"tkExtraJson"] ? : @"";
+            if (scenarioId.length == 0) {
+                scenarioId = showCongifDict[kATUnityUtilitiesAdShowingExtraScenarioKey] ? : @"";
+            }
             
             NSDictionary *rectDict = [NSJSONSerialization JSONObjectWithData:[rect dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:nil];
-            NSLog(@"rectDict = %@", rectDict);
+            NSLog(@"iOS: rectDict = %@", rectDict);
             CGFloat scale = [rectDict[kATBannerSizeUsesPixelFlagKey] boolValue] ? [UIScreen mainScreen].nativeScale : 1.0f;
-            ATBannerView *bannerView = [[ATAdManager sharedManager] retrieveBannerViewForPlacementID:placementID scene:extraDict[kATUnityUtilitiesAdShowingExtraScenarioKey]];
+             
+            NSString *showCustomExt = showCongifDict[@"showCustomExt"] ? : @"";
+            NSDictionary *atCustomContentResult = showCongifDict[@"atCustomContentResult"] ? : @{};
+            NSArray *customContentResult = atCustomContentResult[@"items"] ? : @[];
+            
+            NSMutableArray *contentInfoArray = [NSMutableArray arrayWithCapacity:0];
+            [customContentResult enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                NSString *customContentString = obj[@"customContentString"] ? : @"";
+                double customContentDouble = [obj[@"customContentDouble"] doubleValue];
+                
+                NSDictionary *customContentObject = obj[@"customContentObject"] ? : @{};
+                if (customContentString.length > 0) {
+                    ATCustomContentInfo *info = [[ATCustomContentInfo alloc] initInfoWithContentString:customContentString contentObject:customContentObject];
+                    [contentInfoArray addObject:info];
+                } else {
+                    ATCustomContentInfo *info = [[ATCustomContentInfo alloc] initInfoWithContentDouble:customContentDouble contentObject:customContentObject];
+                    [contentInfoArray addObject:info];
+                }
+            }];
+            
+            ATCustomContentResult *contentResult = [[ATCustomContentResult alloc] initContentResultWithInfoArray:contentInfoArray];
+            
+            ATBannerView *bannerView;
+            
+            if (contentInfoArray.count > 0 || showCustomExt.length > 0) {
+                ATShowConfig *config = [[ATShowConfig alloc] initWithScene:scenarioId showCustomExt:showCustomExt customContentResult:contentResult];
+                bannerView = [[ATAdManager sharedManager] retrieveBannerViewForPlacementID:placementID config:config];
+                NSLog(@"iOS: ATBannerAdWrapper::showBannerAdWithPlacementID:rect:showconfig bannerView=%@ showConfigJsonString=%@", bannerView, extraJsonString);
+            } else {
+                bannerView = [[ATAdManager sharedManager] retrieveBannerViewForPlacementID:placementID scene:scenarioId];
+            }
+            
             bannerView.delegate = self;
             UIButton *bannerCointainer = [UIButton buttonWithType:UIButtonTypeCustom];
             [bannerCointainer addTarget:self action:@selector(noop) forControlEvents:UIControlEventTouchUpInside];
@@ -171,11 +244,63 @@ UIEdgeInsets SafeAreaInsets_ATUnityBanner() {
     });
 }
 
+- (void)showBannerAdWithPlacementID:(NSString*)placementID showConfigJsonString:(NSString*)showConfigJsonString {
+    NSLog(@"iOS: ATBannerAdWrapper::showBannerAdWithPlacementID placementID=%@ showConfigJsonString=%@", placementID, showConfigJsonString);
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        NSDictionary *showCongifDict = ([showConfigJsonString isKindOfClass:[NSString class]] && [showConfigJsonString dataUsingEncoding:NSUTF8StringEncoding] != nil) ? [NSJSONSerialization JSONObjectWithData:[showConfigJsonString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:nil] : nil;
+        
+        NSString *scenarioId = showCongifDict[@"scenarioId"] ? : @"";
+        NSString *showCustomExt = showCongifDict[@"showCustomExt"] ? : @"";
+        NSDictionary *atCustomContentResult = showCongifDict[@"atCustomContentResult"] ? : @{};
+        NSArray *customContentResult = atCustomContentResult[@"items"] ? : @[];
+        
+        NSMutableArray *contentInfoArray = [NSMutableArray arrayWithCapacity:0];
+        [customContentResult enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSString *customContentString = obj[@"customContentString"] ? : @"";
+            double customContentDouble = [obj[@"customContentDouble"] doubleValue];
+            
+            NSDictionary *customContentObject = obj[@"customContentObject"] ? : @{};
+            if (customContentString.length > 0) {
+                ATCustomContentInfo *info = [[ATCustomContentInfo alloc] initInfoWithContentString:customContentString contentObject:customContentObject];
+                [contentInfoArray addObject:info];
+            } else {
+                ATCustomContentInfo *info = [[ATCustomContentInfo alloc] initInfoWithContentDouble:customContentDouble contentObject:customContentObject];
+                [contentInfoArray addObject:info];
+            }
+        }];
+        
+        ATCustomContentResult *contentResult = [[ATCustomContentResult alloc] initContentResultWithInfoArray:contentInfoArray];
+        
+        ATShowConfig *config = [[ATShowConfig alloc] initWithScene:scenarioId showCustomExt:showCustomExt customContentResult:contentResult];
+        
+        ATBannerView *bannerView = [[ATAdManager sharedManager] retrieveBannerViewForPlacementID:placementID config:config];;
+        bannerView.delegate = self;
+        UIButton *bannerCointainer = [UIButton buttonWithType:UIButtonTypeCustom];
+        [bannerCointainer addTarget:self action:@selector(noop) forControlEvents:UIControlEventTouchUpInside];
+         
+        CGSize totalSize = [UIApplication sharedApplication].keyWindow.rootViewController.view.bounds.size;
+        UIEdgeInsets safeAreaInsets = SafeAreaInsets_ATUnityBanner();
+          
+        bannerCointainer.frame = CGRectMake((totalSize.width - CGRectGetWidth(bannerView.bounds)) / 2.0f, safeAreaInsets.top , CGRectGetWidth(bannerView.bounds), CGRectGetHeight(bannerView.bounds));
+        
+        bannerView.frame = bannerCointainer.bounds;
+        [bannerCointainer addSubview:bannerView];
+        
+        [[UIApplication sharedApplication].keyWindow.rootViewController.view addSubview:bannerCointainer];
+        self.bannerViewStorage[placementID] = bannerCointainer;
+        
+    });  
+    
+}
+
 -(void) noop {
     
 }
 
 -(void) removeBannerAdWithPlacementID:(NSString*)placementID {
+    NSLog(@"iOS: ATBannerAdWrapper::removeBannerAdWithPlacementID placementID=%@", placementID);
     dispatch_async(dispatch_get_main_queue(), ^{
         [self->_bannerViewStorage[placementID] removeFromSuperview];
         [self->_bannerViewStorage removeObjectForKey:placementID];
@@ -183,6 +308,7 @@ UIEdgeInsets SafeAreaInsets_ATUnityBanner() {
 }
 
 -(void) showBannerAdWithPlacementID:(NSString*)placementID {
+    NSLog(@"iOS: ATBannerAdWrapper::showBannerAdWithPlacementID placementID=%@", placementID);
     dispatch_async(dispatch_get_main_queue(), ^{
         ATBannerView *bannerView = self->_bannerViewStorage[placementID];
         if (bannerView.superview != nil && !_interstitialOrRVBeingShown) { bannerView.hidden = NO; }
@@ -190,6 +316,7 @@ UIEdgeInsets SafeAreaInsets_ATUnityBanner() {
 }
 
 -(void) hideBannerAdWithPlacementID:(NSString*)placementID {
+    NSLog(@"iOS: ATBannerAdWrapper::hideBannerAdWithPlacementID placementID=%@", placementID);
     dispatch_async(dispatch_get_main_queue(), ^{
         ATBannerView *bannerView = self->_bannerViewStorage[placementID];
         if (bannerView.superview != nil) { bannerView.hidden = YES; }
@@ -197,7 +324,12 @@ UIEdgeInsets SafeAreaInsets_ATUnityBanner() {
 }
 
 -(void) clearCache {
-    
+    NSLog(@"iOS: ATBannerAdWrapper::clearCache");
+}
+
+- (void)entryScenarioWithPlacementID:(NSString *)placementID scenarioID:(NSString *)scenarioID tkExtraJson:(NSString *)tkExtraJson {
+    NSLog(@"iOS: ATBannerAdWrapper::entryScenarioWithPlacementID placementID=%@ scenarioID=%@ tkExtraJson=%@", placementID, scenarioID, tkExtraJson);
+    [[ATAdManager sharedManager] entryBannerScenarioWithPlacementID:placementID scene:scenarioID];
 }
 
 #pragma mark - banner delegate method(s)
@@ -215,6 +347,7 @@ UIEdgeInsets SafeAreaInsets_ATUnityBanner() {
 }
 
 - (void)didFinishLoadingADSourceWithPlacementID:(NSString *)placementID extra:(NSDictionary*)extra{
+    self.adInfoDict = extra;
     [self invokeCallback:@"finishLoadingADSource" placementID:placementID error:nil extra:extra];
 }
 
@@ -237,6 +370,7 @@ UIEdgeInsets SafeAreaInsets_ATUnityBanner() {
 
 -(void) bannerView:(ATBannerView *)bannerView didShowAdWithPlacementID:(NSString *)placementID extra:(NSDictionary *)extra {
     [self invokeCallback:@"OnBannerAdImpress" placementID:placementID error:nil extra:extra];
+    [self invokeCallback:@"OnAdRevenuePaid" placementID:placementID error:nil extra:extra];
 }
 
 -(void) bannerView:(ATBannerView*)bannerView didClickWithPlacementID:(NSString*)placementID extra:(NSDictionary *)extra {
@@ -258,6 +392,21 @@ UIEdgeInsets SafeAreaInsets_ATUnityBanner() {
 -(void) bannerView:(ATBannerView *)bannerView failedToAutoRefreshWithPlacementID:(NSString *)placementID error:(NSError *)error {
     error = error != nil ? error : [NSError errorWithDomain:@"com.secmtp.Unity3DPackage" code:100001 userInfo:@{NSLocalizedDescriptionKey:@"AT has failed to refresh ad", NSLocalizedFailureReasonErrorKey:@"AT has failed to refresh ad"}];
     [self invokeCallback:@"OnBannerAdAutoRefreshFail" placementID:placementID error:error extra:nil];
+}
+
+#pragma mark - ATAdMultipleLoadingDelegate
+- (void)didFinishMultipleLoadingADWithPlacementID:(NSString *)placementID
+                                   requestingInfo:(ATAdRequestingInfo *)requestingInfo {
+    NSMutableDictionary *requestingInfoDict = [NSMutableDictionary dictionaryWithCapacity:0];
+    if (requestingInfo != nil) {
+        if (requestingInfo.biddingAdInfoArrray) {
+            requestingInfoDict[@"biddingAttemptAdInfoList"] = requestingInfo.biddingAdInfoArrray;
+        }
+        if (requestingInfo.loadingAdInfoArrray) {
+            requestingInfoDict[@"loadingAdInfoList"] = requestingInfo.loadingAdInfoArrray;
+        }
+    }
+    [self invokeCallback:@"OnAdMultipleLoaded" placementID:placementID error:nil extra:[requestingInfoDict copy]];
 }
 
 @end

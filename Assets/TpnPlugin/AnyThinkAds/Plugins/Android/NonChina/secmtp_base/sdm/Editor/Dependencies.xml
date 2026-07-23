@@ -1,5 +1,6 @@
 <dependencies>
     <androidPackages>
-        <androidPackage spec="com.smartdigimkttech.sdk:smartdigimkttech-sdk:6.5.48"/>
+        <androidPackage spec="com.anythink.sdk:adapter-tpn-sdm:6.5.68.1.0"/>
+        <androidPackage spec="com.smartdigimkttech.sdk:smartdigimkttech-sdk:6.5.68"/>
     </androidPackages>
 </dependencies>

@@ -87,7 +87,7 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
 
         private IEnumerator loadHotFixPlugin(HotfixPluginData hotFixDataObj) {
             var path = Path.Combine(Application.temporaryCachePath, hotFixDataObj.file_name);
-            ATLog.log("downloadPluginWithEnumerator() >>> path: " + path);
+            ATLog.log("performPluginDownload() >>> path: " + path);
 #if UNITY_2017_2_OR_NEWER
             var downloadHandler = new DownloadHandlerFile(path);
 #else

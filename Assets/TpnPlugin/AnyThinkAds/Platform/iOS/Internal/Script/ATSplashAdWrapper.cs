@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using AOT;
+using AnyThinkAds.Api;
 using AnyThinkAds.ThirdParty.LitJson;
 using AnyThinkAds.iOS;
 #pragma warning disable 0109
 public class ATSplashAdWrapper:ATAdWrapper {
 	static private Dictionary<string, ATSplashAdClient> clients;
 	static private string CMessaageReceiverClass = "ATSplashAdWrapper";
+
+	static private readonly Dictionary<string, IATAdRevenueListener> sRevenueByPlacement = new Dictionary<string, IATAdRevenueListener>();
 
 	static public new void InvokeCallback(JsonData jsonData) {
         Debug.Log("Unity: ATSplashAdWrapper::InvokeCallback()");
@@ -75,9 +78,14 @@ public class ATSplashAdWrapper:ATAdWrapper {
     		if (errorMsg["code"] != null) { errorDict.Add("code", errorMsg["code"]); }
     		if (errorMsg["reason"] != null) { errorDict.Add("message", errorMsg["reason"]); }
     		FailBiddingADSource((string)msgDict["placement_id"],extraJson, errorDict);
+        } else if (callback.Equals("OnAdRevenuePaid")) {
+            string placementId = (string)msgDict["placement_id"];
+            notifyAdRevenuePaidFromCallbackJson(placementId, extraJson);
+        } else if (callback.Equals("OnAdMultipleLoaded")) {
+            OnAdMultipleLoaded((string)msgDict["placement_id"], extraJson ?? "");
+            Debug.Log("Unity: ATSplashAdWrapper::OnAdMultipleLoaded(" + (string)msgDict["placement_id"] + ", " + extraJson + ")");
         }
 
-        
     }
 
 	static public void setClientForPlacementID(string placementID, ATSplashAdClient client) {
@@ -101,6 +109,11 @@ public class ATSplashAdWrapper:ATAdWrapper {
     	ATUnityCBridge.SendMessageToC(CMessaageReceiverClass, "showSplashAdWithPlacementID:extraJsonString:", new object[]{placementID, mapJson});
     }
 
+    static public void showSplashAdWithShowConfig(string placementID, string showConfigJson) {
+        Debug.Log("Unity: ATSplashAdWrapper::showSplashAdWithShowConfig(" + placementID + ")");
+        ATUnityCBridge.SendMessageToC(CMessaageReceiverClass, "showSplashAdWithPlacementID:showConfigJsonString:", new object[] { placementID, showConfigJson ?? "" });
+    }
+
     static public void clearCache(string placementID) {
         Debug.Log("Unity: ATSplashAdWrapper::clearCache()");
     	ATUnityCBridge.SendMessageToC(CMessaageReceiverClass, "clearCache", null);
@@ -117,10 +130,10 @@ public class ATSplashAdWrapper:ATAdWrapper {
         return ATUnityCBridge.GetStringMessageFromC(CMessaageReceiverClass, "getValidAdCaches:", new object[] { placementID });
     }
   
-    static public void entryScenarioWithPlacementID(string placementID, string scenarioID) 
+    static public void entryScenarioWithPlacementID(string placementID, string scenarioID, string tkExtraJson) 
     {
     	Debug.Log("Unity: ATSplashAdWrapper::entryScenarioWithPlacementID(" + placementID + scenarioID + ")");
-    	ATUnityCBridge.SendMessageToC(CMessaageReceiverClass, "entryScenarioWithPlacementID:scenarioID:", new object[]{placementID, scenarioID});
+    	ATUnityCBridge.SendMessageToC(CMessaageReceiverClass, "entryScenarioWithPlacementID:scenarioID:tkExtraJson:", new object[]{placementID, scenarioID, tkExtraJson});
     }
 
     //Callbacks
@@ -169,6 +182,14 @@ public class ATSplashAdWrapper:ATAdWrapper {
     	Debug.Log("Unity: ATSplashAdWrapper::OnSplashAdClose()");
         if (clients[placementID] != null) clients[placementID].OnSplashAdClose(placementID, callbackJson);
     }
+
+    static private void OnAdMultipleLoaded(string placementID, string requestingInfoJson) {
+        if (clients == null || !clients.ContainsKey(placementID) || clients[placementID] == null) {
+            return;
+        }
+        clients[placementID].onAdMultipleLoaded(placementID, requestingInfoJson ?? "");
+    }
+
     // ad source callback
     static public void StartLoadingADSource(string placementID, string callbackJson)
     {
@@ -246,8 +267,18 @@ public class ATSplashAdWrapper:ATAdWrapper {
 
     static public void entryAutoAdScenarioWithPlacementID(string placementID, string scenarioID) 
     {
-    	Debug.Log("Unity: ATSplashAdWrapper::entryAutoAdScenarioWithPlacementID(" + placementID + scenarioID + ")");
-    	ATUnityCBridge.SendMessageToC(CMessaageReceiverClass, "entryAutoAdScenarioWithPlacementID:scenarioID:", new object[]{placementID, scenarioID});
+        Debug.Log("Unity: ATSplashAdWrapper::entryAutoAdScenarioWithPlacementID(" + placementID + "," + scenarioID + ")");
+    	entryAutoAdScenarioWithPlacementID(placementID, scenarioID, null);
+    }
+
+    static public void entryAutoAdScenarioWithPlacementID(string placementID, string scenarioID, string tkExtraJson) 
+    {
+    	Debug.Log("Unity: ATSplashAdWrapper::entryAutoAdScenarioWithPlacementID(" + placementID + "," + scenarioID + ", tkExtraJson length=" + (tkExtraJson != null ? tkExtraJson.Length : 0) + ")");
+    	if (string.IsNullOrEmpty(tkExtraJson)) {
+    		ATUnityCBridge.SendMessageToC(CMessaageReceiverClass, "entryAutoAdScenarioWithPlacementID:scenarioID:", new object[]{placementID, scenarioID});
+    	} else {
+    		ATUnityCBridge.SendMessageToC(CMessaageReceiverClass, "entryAutoAdScenarioWithPlacementID:scenarioID:tkExtraJson:", new object[]{placementID, scenarioID, tkExtraJson});
+    	}
     }
 
     static public void showAutoSplashAd(string placementID, string mapJson) {
@@ -255,7 +286,33 @@ public class ATSplashAdWrapper:ATAdWrapper {
     	ATUnityCBridge.SendMessageToC(CMessaageReceiverClass, "showAutoSplashAd:extraJsonString:", new object[]{placementID, mapJson});
     }
 
+    static public void setAdRevenueListener(string placementId, IATAdRevenueListener listener) {
+        Debug.Log("Unity: ATSplashAdWrapper::setAdRevenueListener(placementId=" + placementId + ", listener=" + (listener != null ? "set" : "clear") + ")");
+        if (string.IsNullOrEmpty(placementId)) {
+            return;
+        }
+        if (listener == null) {
+            sRevenueByPlacement.Remove(placementId);
+        } else {
+            sRevenueByPlacement[placementId] = listener;
+        }
+    }
 
+    static private void notifyAdRevenuePaidFromCallbackJson(string placementId, string callbackJson) {
+        if (string.IsNullOrEmpty(placementId) || string.IsNullOrEmpty(callbackJson)) {
+            return;
+        }
+        if (!sRevenueByPlacement.TryGetValue(placementId, out IATAdRevenueListener target) || target == null) {
+            return;
+        }
+        try {
+            var info = new ATCallbackInfo(callbackJson);
+            target.onAdRevenuePaid(placementId, info);
+            Debug.Log("Unity: ATSplashAdWrapper notifyAdRevenuePaidFromCallbackJson: onAdRevenuePaid placementId=" + placementId + " rawJson=" + callbackJson);
+        } catch (Exception e) {
+            Debug.Log("Unity: ATSplashAdWrapper notifyAdRevenuePaidFromCallbackJson: " + e.Message);
+        }
+    }
 
 }
 

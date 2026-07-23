@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
@@ -37,6 +37,12 @@ namespace AnyThinkAds.Api
             client.loadVideoAd(placementId, JsonMapper.ToJson(pairs));
         }
 
+        /// <summary>Load rewarded video. <paramref name="loadPayload"/> may contain a nested <c>atAdRequest</c> map (<c>channelSource</c>, <c>adxBidFloorInfo</c>, <c>preLoadInfo</c>, ...) plus existing keys such as <c>UserId</c>.</summary>
+        public void loadVideoAd(string placementId, Dictionary<string, object> loadPayload)
+        {
+            client.loadVideoAd(placementId, JsonMapper.ToJson(loadPayload));
+        }
+
 
         public bool hasAdReady(string placementId)
         {
@@ -46,6 +52,22 @@ namespace AnyThinkAds.Api
         public void entryScenarioWithPlacementID(string placementId, string scenarioID)
         {
             client.entryScenarioWithPlacementID(placementId,scenarioID);
+        }
+
+        public void entryScenarioWithPlacementID(string placementId, string scenarioID, Dictionary<string, object> tkExtra)
+        {
+            string j = (tkExtra != null) ? JsonMapper.ToJson(tkExtra) : null;
+            client.entryScenarioWithPlacementID(placementId, scenarioID, j);
+        }
+
+        public void setAdRevenueListener(string placementId, IATAdRevenueListener listener)
+        {
+            client.setAdRevenueListener(placementId, listener);
+        }
+
+        public void setAutoAdRevenueListener(IATAdRevenueListener listener)
+        {
+            client.setAutoAdRevenueListener(listener);
         }
         
         public string checkAdStatus(string placementId)

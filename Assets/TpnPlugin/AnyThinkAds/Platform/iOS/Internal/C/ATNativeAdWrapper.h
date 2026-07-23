@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "ATBaseUnityWrapper.h"
-#import <AnyThinkNative/ATNativeADDelegate.h>
+#import <AnyThinkSDK/AnyThinkSDK.h>
 
 extern NSString *const kParsedPropertiesFrameKey;
 extern NSString *const kParsedPropertiesBackgroundColorKey;

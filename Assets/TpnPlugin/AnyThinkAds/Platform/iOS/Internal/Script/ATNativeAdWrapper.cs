@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using AOT;
+using AnyThinkAds.Api;
 using AnyThinkAds.ThirdParty.LitJson;
 using AnyThinkAds.iOS;
 #pragma warning disable 0109
 public class ATNativeAdWrapper:ATAdWrapper {
     static private Dictionary<string, ATNativeAdClient> clients;
     static private string CMessageReceiverClass = "ATNativeAdWrapper";
+
+    static private readonly Dictionary<string, IATAdRevenueListener> sRevenueByPlacement = new Dictionary<string, IATAdRevenueListener>();
 
     static public new void InvokeCallback(JsonData jsonData) {
         Debug.Log("Unity: ATNativeAdWrapper::InvokeCallback()");
@@ -65,8 +68,14 @@ public class ATNativeAdWrapper:ATAdWrapper {
     		if (errorMsg["code"] != null) { errorDict.Add("code", errorMsg["code"]); }
     		if (errorMsg["reason"] != null) { errorDict.Add("message", errorMsg["reason"]); }
     		FailBiddingADSource((string)msgDict["placement_id"],extraJson, errorDict);
+        } else if (callback.Equals("OnAdRevenuePaid")) {
+            string placementId = (string)msgDict["placement_id"];
+            notifyAdRevenuePaidFromCallbackJson(placementId, extraJson);
+        } else if (callback.Equals("OnAdMultipleLoaded")) {
+            OnAdMultipleLoaded((string)msgDict["placement_id"], extraJson ?? "");
+            Debug.Log("Unity: ATNativeAdWrapper::OnAdMultipleLoaded(" + (string)msgDict["placement_id"] + ", " + extraJson + ")");
         }
-        
+
     }
 
     //Public method(s)
@@ -97,10 +106,10 @@ public class ATNativeAdWrapper:ATAdWrapper {
         return ATUnityCBridge.GetStringMessageFromC(CMessageReceiverClass, "getValidAdCaches:", new object[] { placementID });
     }
 
-    static public void entryScenarioWithPlacementID(string placementID, string scenarioID) 
+    static public void entryScenarioWithPlacementID(string placementID, string scenarioID, string tkExtraJson) 
     {
-    	Debug.Log("Unity: ATNativeAdWrapper::entryScenarioWithPlacementID(" + placementID + scenarioID + ")");
-    	ATUnityCBridge.SendMessageToC(CMessageReceiverClass, "entryScenarioWithPlacementID:scenarioID:", new object[]{placementID, scenarioID});
+    	Debug.Log("Unity: ATNativeAdWrapper::entryScenarioWithPlacementID(" + placementID + scenarioID + tkExtraJson + ")");
+    	ATUnityCBridge.SendMessageToC(CMessageReceiverClass, "entryScenarioWithPlacementID:scenarioID:tkExtraJson:", new object[]{placementID, scenarioID, tkExtraJson});
     }
 
     static public void showNativeAd(string placementID, string metrics) {
@@ -111,6 +120,11 @@ public class ATNativeAdWrapper:ATAdWrapper {
     static public void showNativeAd(string placementID, string metrics, string mapJson) {
         Debug.Log("Unity: ATNativeAdWrapper::showNativeAd(" + placementID + ")");
         ATUnityCBridge.SendMessageToC(CMessageReceiverClass, "showNativeAdWithPlacementID:metricsJSONString:extraJsonString:", new object[]{placementID, metrics, mapJson});
+    }
+
+    static public void showNativeAdWithShowConfig(string placementID, string showConfigJson) {
+        Debug.Log("Unity: ATNativeAdWrapper::showNativeAdWithShowConfig(" + placementID + ")");
+        ATUnityCBridge.SendMessageToC(CMessageReceiverClass, "showNativeAdWithPlacementID:showConfigJsonString:", new object[] { placementID, showConfigJson ?? "" });
     }
 
     static public void removeNativeAdView(string placementID) {
@@ -128,6 +142,13 @@ public class ATNativeAdWrapper:ATAdWrapper {
 		Debug.Log("Unity: ATNativeAdWrapper::OnNativeAdLoaded(" + placementID + ")");
         if (clients[placementID] != null) clients[placementID].onNativeAdLoaded(placementID);
 	}
+
+    static private void OnAdMultipleLoaded(string placementID, string requestingInfoJson) {
+        if (clients == null || !clients.ContainsKey(placementID) || clients[placementID] == null) {
+            return;
+        }
+        clients[placementID].onAdMultipleLoaded(placementID, requestingInfoJson ?? "");
+    }
 
 	static private void OnNativeAdLoadingFailure(string placementID, Dictionary<string, object> errorDict) {
 		Debug.Log("Unity: ATNativeAdWrapper::OnNativeAdLoadingFailure()");
@@ -196,5 +217,33 @@ public class ATNativeAdWrapper:ATAdWrapper {
 
         Debug.Log("placementID = " + placementID + "errorDict = " + JsonMapper.ToJson(errorDict));
         if (clients[placementID] != null) clients[placementID].failBiddingADSource(placementID, callbackJson,(string)errorDict["code"], (string)errorDict["message"]);
+    }
+
+    static public void setAdRevenueListener(string placementId, IATAdRevenueListener listener) {
+        Debug.Log("Unity: ATNativeAdWrapper::setAdRevenueListener(placementId=" + placementId + ", listener=" + (listener != null ? "set" : "clear") + ")");
+        if (string.IsNullOrEmpty(placementId)) {
+            return;
+        }
+        if (listener == null) {
+            sRevenueByPlacement.Remove(placementId);
+        } else {
+            sRevenueByPlacement[placementId] = listener;
+        }
+    }
+
+    static private void notifyAdRevenuePaidFromCallbackJson(string placementId, string callbackJson) {
+        if (string.IsNullOrEmpty(placementId) || string.IsNullOrEmpty(callbackJson)) {
+            return;
+        }
+        if (!sRevenueByPlacement.TryGetValue(placementId, out IATAdRevenueListener target) || target == null) {
+            return;
+        }
+        try {
+            var info = new ATCallbackInfo(callbackJson);
+            target.onAdRevenuePaid(placementId, info);
+            Debug.Log("Unity: ATNativeAdWrapper notifyAdRevenuePaidFromCallbackJson: onAdRevenuePaid placementId=" + placementId + " rawJson=" + callbackJson);
+        } catch (Exception e) {
+            Debug.Log("Unity: ATNativeAdWrapper notifyAdRevenuePaidFromCallbackJson: " + e.Message);
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,10 +26,16 @@ namespace AnyThinkAds.iOS {
         public event EventHandler<ATAdEventArgs>        onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs>        onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs>   onAdSourceBiddingFailureEvent;
+        public event EventHandler<ATAdEventArgs>        onAdMultipleLoadedEvent;
 
 		public void addsetting(string placementId,string json){
 			//todo...
 		}
+		
+		public void onAdMultipleLoaded(string placementId, string requestingInfoJson)
+        {
+            onAdMultipleLoadedEvent?.Invoke(this, new ATAdEventArgs(placementId, requestingInfoJson ?? ""));
+        }
 
 		public void setListener(ATInterstitialAdListener listener) {
 			Debug.Log("Unity: ATInterstitialAdClient::setListener()");
@@ -69,8 +75,17 @@ namespace AnyThinkAds.iOS {
 		}
 
 		public void entryScenarioWithPlacementID(string placementId, string scenarioID){
-            Debug.Log("Unity: ATInterstitialAdClient::entryScenarioWithPlacementID()");
-			ATInterstitialAdWrapper.entryScenarioWithPlacementID(placementId,scenarioID);
+			entryScenarioWithPlacementID(placementId, scenarioID, null);
+		}
+
+		public void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson){
+            Debug.Log("Unity: ATInterstitialAdClient::entryScenarioWithPlacementID(placementId=" + placementId + ", scenarioID=" + scenarioID + ", tkExtraJson length=" + (tkExtraJson != null ? tkExtraJson.Length : 0) + ")");
+			ATInterstitialAdWrapper.entryScenarioWithPlacementID(placementId,scenarioID,tkExtraJson);
+		}
+
+		public void setAdRevenueListener(string placementId, IATAdRevenueListener listener) {
+			Debug.Log("Unity: ATInterstitialAdClient::setAdRevenueListener(placementId=" + placementId + ", listener=" + (listener != null ? "set" : "null") + ")");
+			ATInterstitialAdWrapper.setAdRevenueListener(placementId, listener);
 		}
 
 
@@ -207,14 +222,28 @@ namespace AnyThinkAds.iOS {
 		}
 		public void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID) 
 		{
-			Debug.Log("Unity: ATInterstitialAdClient:entryAutoAdScenarioWithPlacementID()");
-			ATInterstitialAdWrapper.entryAutoAdScenarioWithPlacementID(placementId, scenarioID);
+			entryAutoAdScenarioWithPlacementID(placementId, scenarioID, null);
+		}
+
+		public void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson) 
+		{
+			Debug.Log("Unity: ATInterstitialAdClient::entryAutoAdScenarioWithPlacementID(placementId=" + placementId + ", scenarioID=" + scenarioID + ", tkExtraJson length=" + (tkExtraJson != null ? tkExtraJson.Length : 0) + "; bridge sends placementId+scenarioID only)");
+			ATInterstitialAdWrapper.entryAutoAdScenarioWithPlacementID(placementId, scenarioID, tkExtraJson);
+		}
+
+		public void setAutoAdRevenueListener(IATAdRevenueListener listener) {
+			Debug.Log("Unity: ATInterstitialAdClient::setAutoAdRevenueListener(listener=" + (listener != null ? "set" : "null") + ")");
+			ATInterstitialAdWrapper.setAutoAdRevenueListener(listener);
 		}
 		public void showAutoAd(string placementId, string mapJson) 
 		{
 	    	Debug.Log("Unity: ATInterstitialAdClient::showAutoAd()");
 	    	ATInterstitialAdWrapper.showAutoInterstitialAd(placementId, mapJson);
 	    }
+		public void showAdWithShowConfig(string placementId, string showConfigJson) {
+			Debug.Log("Unity: ATInterstitialAdClient::showAdWithShowConfig(placementId=" + placementId + ", showConfigJson length=" + (showConfigJson != null ? showConfigJson.Length : 0) + ")");
+			ATInterstitialAdWrapper.showInterstitialAdWithShowConfig(placementId, showConfigJson);
+		}
 
 
 	}

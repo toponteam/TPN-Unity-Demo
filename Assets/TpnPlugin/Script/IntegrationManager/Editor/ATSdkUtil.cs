@@ -14,23 +14,15 @@ using UnityEditor;
 public class ATSdkUtil
 {
 // #if UNITY_EDITOR
-    /// <summary>
-    /// Gets the path of the asset in the project for a given Anythink plugin export path.
-    /// </summary>
-    /// <param name="exportPath">The actual exported path of the asset.</param>
-    /// <returns>The exported path of the MAX plugin asset or the default export path if the asset is not found.</returns>
-    public static string GetAssetPathForExportPath(string exportPath)
+    public static string GetAssetPath(string path)
     {
-        var defaultPath = Path.Combine("Assets", exportPath);
-        var assetLabelToFind = "l:al_max_export_path-" + exportPath.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-        var assetGuids = AssetDatabase.FindAssets(assetLabelToFind);
-
-        return assetGuids.Length < 1 ? defaultPath : AssetDatabase.GUIDToAssetPath(assetGuids[0]);
+        var tempPath = Path.Combine("Assets", path);
+        return tempPath;
     }
 
-    public static bool Exists(string filePath)
+    public static bool Exists(string path)
     {
-        return Directory.Exists(filePath) || File.Exists(filePath);
+        return Directory.Exists(path) || File.Exists(path);
     }
 // #endif
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,6 +23,7 @@ namespace AnyThinkAds.iOS {
         public event EventHandler<ATAdEventArgs>		onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs>		onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs>	onAdSourceBiddingFailureEvent;
+        public event EventHandler<ATAdEventArgs>		onAdMultipleLoadedEvent;
         public event EventHandler<ATAdEventArgs>		onPlayAgainStart;
         public event EventHandler<ATAdEventArgs>		onPlayAgainEnd;
         public event EventHandler<ATAdErrorEventArgs>	onPlayAgainFailure;
@@ -30,6 +31,11 @@ namespace AnyThinkAds.iOS {
         public event EventHandler<ATAdEventArgs>		onPlayAgainReward;
 
 		private  ATRewardedVideoListener anyThinkListener;
+
+	    public void onAdMultipleLoaded(string placementId, string requestingInfoJson)
+        {
+            onAdMultipleLoadedEvent?.Invoke(this, new ATAdEventArgs(placementId, requestingInfoJson ?? ""));
+        }
 
 		public void addsetting (string placementId,string json){
 			//todo...
@@ -57,7 +63,7 @@ namespace AnyThinkAds.iOS {
 
 	    public void showAd(string placementId, string mapJson) {
 	    	Debug.Log("Unity: ATRewardedVideoAdClient::showAd()");
-	    	ATRewardedVideoWrapper.showRewardedVideo(placementId, mapJson);
+	    	ATRewardedVideoWrapper.showRewardedVideo(placementId, mapJson); 
 	    }
 
 	    public void cleanAd(string placementId) {
@@ -79,8 +85,23 @@ namespace AnyThinkAds.iOS {
 	    }
 
 		public void entryScenarioWithPlacementID(string placementId, string scenarioID){
-            Debug.Log("Unity: ATRewardedVideoAdClient::entryScenarioWithPlacementID()");
-			ATRewardedVideoWrapper.entryScenarioWithPlacementID(placementId,scenarioID);
+			entryScenarioWithPlacementID(placementId, scenarioID, null);
+		}
+
+		public void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson) {
+            Debug.Log("Unity: ATRewardedVideoAdClient::entryScenarioWithPlacementID(placementId=" + placementId + ", scenarioID=" + scenarioID + ", tkExtraJson length=" + (tkExtraJson != null ? tkExtraJson.Length : 0) + ")");
+			ATRewardedVideoWrapper.entryScenarioWithPlacementID(placementId,scenarioID,tkExtraJson);
+		}
+
+		public void setAdRevenueListener(string placementId, IATAdRevenueListener listener) {
+			Debug.Log("Unity: ATRewardedVideoAdClient::setAdRevenueListener(placementId=" + placementId + ", listener=" + (listener != null ? "set" : "null") + ")");
+			ATRewardedVideoWrapper.setAdRevenueListener(placementId, listener);
+
+		}
+
+		public void setAutoAdRevenueListener(IATAdRevenueListener listener) {
+			Debug.Log("Unity: ATRewardedVideoAdClient::setAutoAdRevenueListener(listener=" + (listener != null ? "set" : "null") + ")");
+			ATRewardedVideoWrapper.setAutoAdRevenueListener(listener);
 		}
 
 		public string getValidAdCaches(string placementId)
@@ -139,13 +160,20 @@ namespace AnyThinkAds.iOS {
 		}
 		public void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID) 
 		{
-			Debug.Log("Unity: ATRewardedVideoAdClient:entryAutoAdScenarioWithPlacementID()");
-			ATRewardedVideoWrapper.entryAutoAdScenarioWithPlacementID(placementId, scenarioID);
+			entryAutoAdScenarioWithPlacementID(placementId, scenarioID, null);
 		}
+
+		public void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson) 
+		{
+			Debug.Log("Unity: ATRewardedVideoAdClient::entryAutoAdScenarioWithPlacementID(placementId=" + placementId + ", scenarioID=" + scenarioID + ", tkExtraJson length=" + (tkExtraJson != null ? tkExtraJson.Length : 0) + "; bridge sends placementId+scenarioID only)");
+			ATRewardedVideoWrapper.entryAutoAdScenarioWithPlacementID(placementId, scenarioID, tkExtraJson);
+		}	
+
 		public void showAutoAd(string placementId, string mapJson) 
 		{
 	    	Debug.Log("Unity: ATRewardedVideoAdClient::showAutoAd()");
 	    	ATRewardedVideoWrapper.showAutoRewardedVideo(placementId, mapJson);
+			
 	    }
 
 		//auto callbacks
@@ -219,7 +247,7 @@ namespace AnyThinkAds.iOS {
         public void onRewardedVideoReward(string placementId, string callbackJson) {
             Debug.Log("Unity: ATRewardedVideoAdClient::onRewardedVideoReward()");
             onRewardEvent?.Invoke(this, new ATAdEventArgs(placementId, callbackJson));
-        }
+        } 
 
 		//--------again callback-------
 		public void onRewardedVideoAdAgainPlayStart(string placementId, string callbackJson)
@@ -253,6 +281,11 @@ namespace AnyThinkAds.iOS {
 		{
 			Debug.Log("Unity: ATRewardedVideoAdClient::onAgainReward()");
 			onPlayAgainReward?.Invoke(this, new ATAdEventArgs(placementId, callbackJson));
+		}
+
+		public void showAdWithShowConfig(string placementId, string showConfigJson) {
+			Debug.Log("Unity: ATRewardedVideoAdClient::showAdWithShowConfig(placementId=" + placementId + ", showConfigJson length=" + (showConfigJson != null ? showConfigJson.Length : 0) + ")");
+			ATRewardedVideoWrapper.showRewardedVideoWithShowConfig(placementId, showConfigJson);
 		}
 
 	}

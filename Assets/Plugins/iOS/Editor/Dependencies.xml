@@ -1,0 +1,5 @@
+ <dependencies>
+     <iosPods>
+         <iosPod name="TPNDebugUISDK" version="1.0.7" />
+     </iosPods>
+ </dependencies>

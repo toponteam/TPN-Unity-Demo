@@ -21,6 +21,7 @@ public class SplashAdOperator : BaseAdOperator
         
 	}
 
+	private bool pendingShowOnLoad = false;
 	public static SplashAdOperator Instance 
 	{
         get 
@@ -32,6 +33,7 @@ public class SplashAdOperator : BaseAdOperator
     public override void initializeAd()
     {
         ATSplashAd.Instance.client.onAdLoadEvent += onSplashAdLoad;
+        ATSplashAd.Instance.client.onAdShowFailureEvent += onSplashAdShowFail;
         ATSplashAd.Instance.client.onAdCloseEvent += onSplashAdClose;
         ATSplashAd.Instance.client.onAdShowEvent += onSplashAdShow;
         ATSplashAd.Instance.client.onAdLoadTimeoutEvent += onSplashAdLoadTimeout;
@@ -41,37 +43,45 @@ public class SplashAdOperator : BaseAdOperator
     public override void destroyAd()
     {
         ATSplashAd.Instance.client.onAdLoadEvent -= onSplashAdLoad;
+        ATSplashAd.Instance.client.onAdShowFailureEvent -= onSplashAdShowFail;
         ATSplashAd.Instance.client.onAdCloseEvent -= onSplashAdClose;
         ATSplashAd.Instance.client.onAdShowEvent -= onSplashAdShow;
         ATSplashAd.Instance.client.onAdLoadTimeoutEvent -= onSplashAdLoadTimeout;
         ATSplashAd.Instance.client.onAdLoadFailureEvent -= onSplashAdLoadFailed;
     }
 
-    public override void showAd() 
-    {
-        if (ATSplashAd.Instance.hasSplashAdReady(SPLASH_PLACEMENT_ID))
-        {
-            ATSplashAd.Instance.showSplashAd(SPLASH_PLACEMENT_ID, new Dictionary<string, object>());
-        }
-        else
-        {
-            setAdReadyStatus(false);
-            loadAd();
-        }
-    }
+   public override void showAd() 
+   {
+       if (ATSplashAd.Instance.hasSplashAdReady(SPLASH_PLACEMENT_ID))
+       {
+           pendingShowOnLoad = false;
+            ATSplashAd.Instance.showSplashAd(SPLASH_PLACEMENT_ID, new Dictionary<string, string>());
+       }
+       else
+       {
+           setAdReadyStatus(false);
+           pendingShowOnLoad = true;
+           loadAd();
+       }
+   }
 
-    public override void loadAd()
-    {
-        setLoading();
+   public override void loadAd()
+   {
+       setLoading();
+       pendingShowOnLoad = true;
         ATSplashAd.Instance.loadSplashAd(SPLASH_PLACEMENT_ID, new Dictionary<string, object>());
-    }
+   }
 
-    public void onSplashAdLoad(object sender, ATAdEventArgs arg)
-    {
-        Debug.Log("Splash::onSplashAdLoad() >>> " + arg.placementId);
-        setLoadSuccess();
-        showAd();
-    }
+   public void onSplashAdLoad(object sender, ATAdEventArgs arg)
+   {
+       Debug.Log("Splash::onSplashAdLoad() >>> " + arg.placementId);
+       setLoadSuccess();
+       if (pendingShowOnLoad)
+       {
+           pendingShowOnLoad = false;
+            ATSplashAd.Instance.showSplashAd(SPLASH_PLACEMENT_ID, new Dictionary<string, string>());
+       }
+   }
 
     public void onSplashAdClose(object sender, ATAdEventArgs arg) 
     {
@@ -94,5 +104,11 @@ public class SplashAdOperator : BaseAdOperator
         setLoadFailed(args);
         // Splash ad failed to load. We recommend retrying with exponentially higher delays up to a maximum delay (in this case 64 seconds).
         retryAdAttempt();
+    }
+    public void onSplashAdShowFail(object sender, ATAdErrorEventArgs args)
+    {
+        Debug.Log("Splash::onSplashAdShowFail() >>> " + args.placementId + " code: " + args.errorCode + " msg: " + args.errorMessage);
+        pendingShowOnLoad = false;
+        loadAd();
     }
 }

@@ -18,7 +18,7 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
         private const string alertIconExportPath = "TpnPlugin/Resources/Images/alert_icon.png";
         private const string warningIconExportPath = "TpnPlugin/Resources/Images/warning_icon.png";
 
-        private static readonly Color darkModeTextColor = new Color(0.29f, 0.6f, 0.8f);
+        private static readonly Color darkModeTextColor = new Color(0.24f, 0.55f, 0.82f);
         private GUIStyle titleLabelStyle;
         private GUIStyle headerLabelStyle;
         private GUIStyle environmentValueStyle;
@@ -32,21 +32,21 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
         private Vector2 scrollPosition;
         private static readonly Vector2 windowMinSize = new Vector2(850, 750);
         private const float actionFieldWidth = 80f;
-        private const float upgradeAllButtonWidth = 80f;
-        private const float networkFieldMinWidth = 200f;
-        private const float versionFieldMinWidth = 200f;
-        private const float privacySettingLabelWidth = 200f;
-        private const float networkFieldWidthPercentage = 0.22f;
-        private const float versionFieldWidthPercentage = 0.36f; // There are two version fields. Each take 40% of the width, network field takes the remaining 20%.
-        private static float previousWindowWidth = windowMinSize.x;
-        private static GUILayoutOption networkWidthOption = GUILayout.Width(networkFieldMinWidth);
-        private static GUILayoutOption versionWidthOption = GUILayout.Width(versionFieldMinWidth);
+        private const float upgradeAllBtnWidth = 80f;
+        private const float netColumnMinWidth = 200f;
+        private const float verColumnMinWidth = 200f;
+        private const float privacyLblWidth = 200f;
+        private const float netColumnRatio = 0.22f;
+        private const float verColumnRatio = 0.36f;
+        private static float lastWindowWidth = windowMinSize.x;
+        private static GUILayoutOption networkWidthOption = GUILayout.Width(netColumnMinWidth);
+        private static GUILayoutOption versionWidthOption = GUILayout.Width(verColumnMinWidth);
 
         private static GUILayoutOption sdkKeyTextFieldWidthOption = GUILayout.Width(520);
 
         private static GUILayoutOption privacySettingFieldWidthOption = GUILayout.Width(400);
         private static readonly GUILayoutOption fieldWidth = GUILayout.Width(actionFieldWidth);
-        private static readonly GUILayoutOption upgradeAllButtonFieldWidth = GUILayout.Width(upgradeAllButtonWidth);
+        private static readonly GUILayoutOption upgradeAllButtonFieldWidth = GUILayout.Width(upgradeAllBtnWidth);
 
         private ATEditorCoroutine loadDataCoroutine;
         private PluginData pluginData;
@@ -72,14 +72,14 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
             {
                 fontSize = 14,
                 fontStyle = FontStyle.Bold,
-                fixedHeight = 20
+                fixedHeight = 22
             };
 
             headerLabelStyle = new GUIStyle(EditorStyles.label)
             {
                 fontSize = 12,
                 fontStyle = FontStyle.Bold,
-                fixedHeight = 18
+                fixedHeight = 20
             };
 
             environmentValueStyle = new GUIStyle(EditorStyles.label)
@@ -111,17 +111,17 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
             };
 
             // Load uninstall icon texture.
-            var uninstallIconData = File.ReadAllBytes(ATSdkUtil.GetAssetPathForExportPath(uninstallIconExportPath));
+            var uninstallIconData = File.ReadAllBytes(ATSdkUtil.GetAssetPath(uninstallIconExportPath));
             uninstallIcon = new Texture2D(100, 100, TextureFormat.RGBA32, false); // 1. Initial size doesn't matter here, will be automatically resized once the image asset is loaded. 2. Set mipChain to false, else the texture has a weird blurry effect.
             uninstallIcon.LoadImage(uninstallIconData);
 
             // Load alert icon texture.
-            var alertIconData = File.ReadAllBytes(ATSdkUtil.GetAssetPathForExportPath(alertIconExportPath));
+            var alertIconData = File.ReadAllBytes(ATSdkUtil.GetAssetPath(alertIconExportPath));
             alertIcon = new Texture2D(100, 100, TextureFormat.RGBA32, false);
             alertIcon.LoadImage(alertIconData);
 
             // Load warning icon texture.
-            var warningIconData = File.ReadAllBytes(ATSdkUtil.GetAssetPathForExportPath(warningIconExportPath));
+            var warningIconData = File.ReadAllBytes(ATSdkUtil.GetAssetPath(warningIconExportPath));
             warningIcon = new Texture2D(100, 100, TextureFormat.RGBA32, false);
             warningIcon.LoadImage(warningIconData);
 
@@ -147,7 +147,6 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
             ATIntegrationManager.Instance.CancelDownload();
             EditorUtility.ClearProgressBar();
 
-            // Saves the AppLovinSettings object if it has been changed.
             AssetDatabase.SaveAssets();
         }
 
@@ -159,9 +158,9 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
         private void OnGUI()
         {
             // OnGUI is called on each frame draw, so we don't want to do any unnecessary calculation if we can avoid it. So only calculate it when the width actually changed.
-            if (Math.Abs(previousWindowWidth - position.width) > 1)
+            if (Math.Abs(lastWindowWidth - position.width) > 1)
             {
-                previousWindowWidth = position.width;
+                lastWindowWidth = position.width;
                 CalculateFieldWidth();
             }
             using (var scrollView = new EditorGUILayout.ScrollViewScope(scrollPosition, false, false))
@@ -191,7 +190,7 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
         /// <summary>
         /// Callback method that will be called with progress updates when the plugin is being downloaded.
         /// </summary>
-        public static void OnDownloadPluginProgress(string pluginName, float progress, bool done)
+        public static void OnPluginDownloadProgressChanged(string pluginName, float progress, bool done)
         {
             ATLog.logFormat("OnDownloadPluginProgress() >>> pluginName: {0}, progress: {1}, done: {2}", new object[] { pluginName, progress, done });
             // Download is complete. Clear progress bar.
@@ -295,20 +294,17 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
 
         private void CalculateFieldWidth()
         {
-            var currentWidth = position.width;
-            var availableWidth = currentWidth - actionFieldWidth - 80; // NOTE: Magic number alert. This is the sum of all the spacing the fields and other UI elements.
-            var networkLabelWidth = Math.Max(networkFieldMinWidth, availableWidth * networkFieldWidthPercentage);
-            networkWidthOption = GUILayout.Width(networkLabelWidth);
+            var winWidth = position.width;
+            var usable = winWidth - actionFieldWidth - 80;
+            var netColWidth = Math.Max(netColumnMinWidth, usable * netColumnRatio);
+            networkWidthOption = GUILayout.Width(netColWidth);
 
-            var versionLabelWidth = Math.Max(versionFieldMinWidth, availableWidth * versionFieldWidthPercentage);
-            versionWidthOption = GUILayout.Width(versionLabelWidth);
+            var verColWidth = Math.Max(verColumnMinWidth, usable * verColumnRatio);
+            versionWidthOption = GUILayout.Width(verColWidth);
 
-            const int textFieldOtherUiElementsWidth = 45; // NOTE: Magic number alert. This is the sum of all the spacing the fields and other UI elements.
-            var availableTextFieldWidth = currentWidth - networkLabelWidth - textFieldOtherUiElementsWidth;
-            sdkKeyTextFieldWidthOption = GUILayout.Width(availableTextFieldWidth);
-
-            var availableUserDescriptionTextFieldWidth = currentWidth - privacySettingLabelWidth - textFieldOtherUiElementsWidth;
-            privacySettingFieldWidthOption = GUILayout.Width(availableUserDescriptionTextFieldWidth);
+            const int uiPadding = 45;
+            sdkKeyTextFieldWidthOption = GUILayout.Width(winWidth - netColWidth - uiPadding);
+            privacySettingFieldWidthOption = GUILayout.Width(winWidth - privacyLblWidth - uiPadding);
         }
 
         private void DrawCountryUI()
@@ -400,7 +396,7 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
             using (new EditorGUILayout.VerticalScope("box"))
             {
                 // Draw plugin version details
-                DrawHeaders("Platform", true);
+                DrawTableHeader("Platform", true);
                 DrawPluginDetailRow("Unity Plugin", ATConfig.PLUGIN_VERSION, "", "");
                 if (pluginData == null)
                 {
@@ -584,24 +580,22 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
         }
 
 
-        private void DrawHeaders(string firstColumnTitle, bool drawAction)
+        private void DrawTableHeader(string col1Title, bool showActions = true)
         {
-            using (new EditorGUILayout.HorizontalScope())
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(5);
+            EditorGUILayout.LabelField(col1Title, headerLabelStyle, networkWidthOption);
+            EditorGUILayout.LabelField("Current Version", headerLabelStyle, versionWidthOption);
+            GUILayout.Space(3);
+            EditorGUILayout.LabelField("SDK Versions", headerLabelStyle, versionWidthOption);
+            GUILayout.Space(3);
+            if (showActions)
             {
+                GUILayout.FlexibleSpace();
+                GUILayout.Button("Actions", headerLabelStyle, fieldWidth);
                 GUILayout.Space(5);
-                EditorGUILayout.LabelField(firstColumnTitle, headerLabelStyle, networkWidthOption);
-                EditorGUILayout.LabelField("Current Version", headerLabelStyle, versionWidthOption);
-                GUILayout.Space(3);
-                EditorGUILayout.LabelField("SDK Versions", headerLabelStyle, versionWidthOption);
-                GUILayout.Space(3);
-                if (drawAction)
-                {
-                    GUILayout.FlexibleSpace();
-                    GUILayout.Button("Actions", headerLabelStyle, fieldWidth);
-                    GUILayout.Space(5);
-                }
             }
-
+            EditorGUILayout.EndHorizontal();
             GUILayout.Space(4);
         }
 
@@ -707,7 +701,7 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
             GUILayout.BeginHorizontal();
             using (new EditorGUILayout.VerticalScope("box"))
             {
-                DrawHeaders("Network", true);
+                DrawTableHeader("Network", true);
                 string clickTip = "You need to select an sdk version and click the Exchange button.";
                 // Immediately after downloading and importing a plugin the entire IDE reloads and current versions can be null in that case. Will just show loading text in that case.
                 if (pluginData == null)

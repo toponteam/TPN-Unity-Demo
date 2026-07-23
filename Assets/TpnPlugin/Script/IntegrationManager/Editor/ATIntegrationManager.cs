@@ -117,26 +117,20 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
             }
         }
 
-        /// <summary>
-        /// Downloads the plugin file for a given network.
-        /// </summary>
-        /// <param name="network">Network for which to download the current version.</param>
-        /// <param name="showImport">Whether or not to show the import window when downloading. Defaults to <c>true</c>.</param>
-        /// <returns></returns>
         public void downloadPlugin(Network network, int os =1, bool showImport = false)
         {
-            ATEditorCoroutine.startCoroutine(downloadPluginWithEnumerator(network, os, showImport));
+            ATEditorCoroutine.startCoroutine(performPluginDownload(network, os, showImport));
         }
 
-        public IEnumerator downloadPluginWithEnumerator(Network network, int os, bool showImport)
+        public IEnumerator performPluginDownload(Network network, int os, bool showImport)
         {
-            ATLog.log("downloadPluginWithEnumerator() >>> networkName: " + network.Name + " os: " + os);
+            ATLog.log("performPluginDownload() >>> networkName: " + network.Name + " os: " + os);
             // if (downloadPluginRequest != null)
             // {
             //     downloadPluginRequest.Dispose();
             // }
             var path = Path.Combine(Application.temporaryCachePath, network.PluginFileName);
-            ATLog.log("downloadPluginWithEnumerator() >>> path: " + path);
+            ATLog.log("performPluginDownload() >>> path: " + path);
 #if UNITY_2017_2_OR_NEWER
             var downloadHandler = new DownloadHandlerFile(path);
 #else
@@ -271,7 +265,7 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
             foreach (var network in networks)
             {
 
-                yield return downloadPluginWithEnumerator(network, os, false);
+                yield return performPluginDownload(network, os, false);
             }
             EditorApplication.UnlockReloadAssemblies();
         }

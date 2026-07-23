@@ -1,4 +1,4 @@
-﻿#if UNITY_IOS || UNITY_IPHONE
+#if UNITY_IOS || UNITY_IPHONE
 
 using AnyThink.Scripts.IntegrationManager.Editor;
 #if UNITY_2019_3_OR_NEWER
@@ -17,17 +17,16 @@ using UnityEngine;
 namespace AnyThink.Scripts.Editor
 {
     [Serializable]
-    public class SkAdNetworkData
+    public class TopOnSkAdNetworkInfo
     {
-        [SerializeField] public string[] SkAdNetworkIds;
+        [SerializeField] public string[] ids;
     }
 
     public class TopOnPostProcessBuildiOS
     {
-        private static string mBuildPath;
+        private static string sBuildPath;
 
-        private static readonly List<string> AtsRequiringNetworks = new List<string>
-        {
+        private static readonly string[] AtsRequiringNetworkNames = {
             "AdColony",
             "ByteDance",
             "Fyber",
@@ -39,76 +38,70 @@ namespace AnyThink.Scripts.Editor
             "Smaato"
         };
 
-        private static List<string> DynamicLibraryPathsToEmbed
+        private static readonly string[] FixedEmbedFrameworks = {
+            "KSAdSDK/KSAdSDK.xcframework",
+            "StartAppSDK/StartApp.xcframework",
+            "BigoADS/BigoADS/BigoADS.xcframework",
+            "BigoADS/BigoADS/OMSDK_Bigosg.xcframework",
+            "Fyber_Marketplace_SDK/IASDKCore/IASDKCore.xcframework",
+            "InMobiSDK/InMobiSDK.xcframework",
+            "GDTMobSDK/GDTFramework/GDTMobSDK.xcframework",
+            "GDTMobSDK/GDTFramework/Tquic.xcframework",
+             "ATOM-Standalone/ATOM.xcframework",
+             "TPNiOS/core/AnyThinkSDK.xcframework"
+         };
+ 
+        private static List<string> CollectDynamicFrameworkPaths(string buildRoot)
         {
-            get
+            var result = new List<string>();
+            foreach (var fw in FixedEmbedFrameworks)
             {
-                var dynamicLibraryPathsToEmbed = new List<string>();
-                dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "KSAdSDK/KSAdSDK.xcframework"));
-                dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "StartAppSDK/StartApp.xcframework"));
-                dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "BigoADS/BigoADS/BigoADS.xcframework"));
-                dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "BigoADS/BigoADS/OMSDK_Bigosg.xcframework"));
-                dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "Fyber_Marketplace_SDK/IASDKCore/IASDKCore.xcframework"));
-                dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "InMobiSDK/InMobiSDK.xcframework"));
-                dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "GDTMobSDK/GDTFramework/GDTMobSDK.xcframework"));
-                dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "GDTMobSDK/GDTFramework/Tquic.xcframework"));
-
-                //pubnative
-                dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "ATOM-Standalone/ATOM.xcframework"));
-                string pubNativePath = Path.Combine(mBuildPath, "Pods/HyBid/PubnativeLite/PubnativeLite");
-                if (Directory.Exists(pubNativePath)) {
-                    // 获取所有以"OMSDK-"开头的子目录
-                    string[] subDirectories = Directory.GetDirectories(pubNativePath, "OMSDK-*");
-                    if (subDirectories.Length > 0) {
-                        string versionDirectory= subDirectories[0];
-                        string versionDirectoryName = Path.GetFileName(versionDirectory);
-                        // ATLog.logError("DynamicLibraryPathsToEmbed() >>> pubNative versionDirectoryName: " + versionDirectoryName);
-                        dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "HyBid/PubnativeLite/PubnativeLite/" + versionDirectoryName + "/OMSDK_Pubnativenet.xcframework"));
-                    }
-                }
-                //applovin
-                string applovinPath = Path.Combine(mBuildPath, "Pods/AppLovinSDK");
-                if (Directory.Exists(applovinPath)) {
-                    // 获取所有以"applovin-ios-sdk-"开头的子目录
-                    string[] applovinSubDirectories = Directory.GetDirectories(applovinPath, "applovin-ios-sdk-*");
-                    if (applovinSubDirectories.Length > 0) {
-                        string applovinVersionDirectory = applovinSubDirectories[0];
-                        string applovinVersionDirectoryName = Path.GetFileName(applovinVersionDirectory);
-                         // ATLog.logError("DynamicLibraryPathsToEmbed() >>> applovinVersionDirectoryName: " + applovinVersionDirectoryName);
-                        dynamicLibraryPathsToEmbed.Add(Path.Combine("Pods/", "AppLovinSDK/" + applovinVersionDirectoryName + "/AppLovinSDK.xcframework"));
-                    }
-                }
-
-                return dynamicLibraryPathsToEmbed;
+                result.Add(Path.Combine("Pods/", fw));
             }
+
+            AppendVersionedFramework(result, buildRoot,
+                "Pods/HyBid/PubnativeLite/PubnativeLite", "OMSDK-*",
+                dir => "HyBid/PubnativeLite/PubnativeLite/" + dir + "/OMSDK_Pubnativenet.xcframework");
+
+            AppendVersionedFramework(result, buildRoot,
+                "Pods/AppLovinSDK", "applovin-ios-sdk-*",
+                dir => "AppLovinSDK/" + dir + "/AppLovinSDK.xcframework");
+
+            // Scan Pods for all TPN dynamic frameworks and embed them
+            string[] tpnDynamicFrameworkPaths = {
+                "Pods/TPNiOS/core/AnyThinkSDK.xcframework",
+                "Pods/SmartdigimktSDK/SmartDigimktSDK/SmartdigimktSDK.xcframework"
+            };
+            foreach (var fw in tpnDynamicFrameworkPaths)
+            {
+                string fwFullPath = Path.Combine(buildRoot, fw);
+                if (Directory.Exists(fwFullPath))
+                {
+                    result.Add(fw);
+                    ATLog.log("CollectDynamicFrameworkPaths: found TPN dynamic framework at " + fwFullPath);
+                }
+            }
+
+            return result;
+         }
+
+        private static void AppendVersionedFramework(List<string> target, string buildRoot,
+            string searchBase, string pattern, Func<string, string> pathBuilder)
+        {
+            var basePath = Path.Combine(buildRoot, searchBase);
+            if (!Directory.Exists(basePath)) return;
+            var dirs = Directory.GetDirectories(basePath, pattern);
+            if (dirs.Length == 0) return;
+            var dirName = Path.GetFileName(dirs[0]);
+            target.Add(Path.Combine("Pods/", pathBuilder(dirName)));
         }
 
-        //读取本地已安装network的版本号:network_data.json
-        // private static string getNetworkVersion(string networkDataJsonFilePath)
-        // {
-        //     if (!File.Exists(networkDataJsonFilePath)) {
-        //         return "";
-        //     }
-        //     string jsonData = File.ReadAllText(networkDataJsonFilePath);
-        //     var networkLocalData = JsonUtility.FromJson<NetworkLocalData>(a_json);
-        //     if (networkLocalData != null) {
-        //         return networkLocalData.version;
-        //     }
-        //     retrun "";
-        // }
-
-        private static List<string> BunldePathsToAdd {
-            get {
-
-                var bunldePathsToAdd = new List<string>();
-                bunldePathsToAdd.Add(Path.Combine("Pods/", "BigoADS/BigoADS/BigoADSRes.bundle"));
-                bunldePathsToAdd.Add(Path.Combine("Pods/", "Ads-Global/SDK/PAGAdSDK.bundle"));
-                bunldePathsToAdd.Add(Path.Combine("Pods/", "Ads-CN/SDK/CSJAdSDK.bundle"));
-                bunldePathsToAdd.Add(Path.Combine("Pods/", "Ads-CN-Beta/SDK/CSJAdSDK.bundle"));
-
-                return bunldePathsToAdd;
-            }
-        }
+        private static readonly string[] BundleResources = {
+            "BigoADS/BigoADS/BigoADSRes.bundle",
+            "Ads-Global/SDK/PAGAdSDK.bundle",
+            "Ads-CN/SDK/CSJAdSDK.bundle",
+            "Ads-CN-Beta/SDK/CSJAdSDK.bundle"
+        };
 
         private static readonly List<string> SwiftLanguageNetworks = new List<string>
         {
@@ -142,8 +135,8 @@ namespace AnyThink.Scripts.Editor
             project.SetBuildProperty(unityFrameworkTargetGuid, "GCC_ENABLE_OBJC_EXCEPTIONS", "YES");
             project.SetBuildProperty(unityFrameworkTargetGuid, "ENABLE_BITCODE", "NO");
 
-            EmbedDynamicLibrariesIfNeeded(buildPath, project, unityMainTargetGuid);
-            AddBunleIfNeeded(buildPath, project, unityMainTargetGuid);
+            ProcessDynamicFrameworkEmbedding(buildPath, project, unityMainTargetGuid);
+            IntegrateBundleResources(buildPath, project, unityMainTargetGuid);
 
             project.WriteToFile(projectPath);
         }
@@ -156,60 +149,61 @@ namespace AnyThink.Scripts.Editor
             plist.ReadFromFile(plistPath);
 
 #if UNITY_2018_2_OR_NEWER
-            AddGoogleApplicationIdIfNeeded(plist);
+            ConfigureAdmobAppIdentifier(plist);
 #endif
+            // Required for iOS 14+ ATT authorization dialog
+            plist.root.SetString("NSUserTrackingUsageDescription",
+                "Your data will be used to provide you with a better and personalized ad experience.");
 
             plist.WriteToFile(plistPath);
         }
 
-        private static void AddBunleIfNeeded(string buildPath, PBXProject project, string targetGuid)
+        private static void IntegrateBundleResources(string buildPath, PBXProject project, string targetGuid)
         {
-            var bunldePathsPresentInProject = BunldePathsToAdd.Where(bunldePath => Directory.Exists(Path.Combine(buildPath, bunldePath))).ToList();
-            if (bunldePathsPresentInProject.Count <= 0) return;
-            ATLog.log("AddBunleIfNeeded");
-
 #if UNITY_2019_3_OR_NEWER
-            foreach (var bunldePath in bunldePathsPresentInProject)
+            int added = 0;
+            foreach (var res in BundleResources)
             {
-                var fileGuid = project.AddFile(bunldePath, bunldePath, PBXSourceTree.Source);
-                project.AddFileToBuild(targetGuid, fileGuid);
+                var fullPath = Path.Combine("Pods/", res);
+                if (!Directory.Exists(Path.Combine(buildPath, fullPath))) continue;
+                var guid = project.AddFile(fullPath, fullPath, PBXSourceTree.Source);
+                project.AddFileToBuild(targetGuid, guid);
+                added++;
             }
+            if (added > 0) ATLog.log("IntegrateBundleResources: added " + added + " bundles");
 #endif
         }
 
-        private static void EmbedDynamicLibrariesIfNeeded(string buildPath, PBXProject project, string targetGuid)
+        private static void ProcessDynamicFrameworkEmbedding(string buildPath, PBXProject project, string targetGuid)
         {
-            mBuildPath = buildPath;
-            ATLog.log("EmbedDynamicLibrariesIfNeeded() >>> buildPath: " + buildPath);
-            var dynamicLibraryPathsPresentInProject = DynamicLibraryPathsToEmbed.Where(dynamicLibraryPath => Directory.Exists(Path.Combine(buildPath, dynamicLibraryPath))).ToList();
-            if (dynamicLibraryPathsPresentInProject.Count <= 0) return;
+            ATLog.log("ProcessDynamicFrameworkEmbedding() >>> buildPath: " + buildPath);
+            var frameworkPaths = CollectDynamicFrameworkPaths(buildPath);
+            var existing = frameworkPaths.Where(p => Directory.Exists(Path.Combine(buildPath, p))).ToList();
+            if (existing.Count == 0) return;
 
 #if UNITY_2019_3_OR_NEWER
-            foreach (var dynamicLibraryPath in dynamicLibraryPathsPresentInProject)
+            foreach (var fwPath in existing)
             {
-                var fileGuid = project.AddFile(dynamicLibraryPath, dynamicLibraryPath);
-                project.AddFileToEmbedFrameworks(targetGuid, fileGuid);
+                var guid = project.AddFile(fwPath, fwPath);
+                project.AddFileToEmbedFrameworks(targetGuid, guid);
             }
 #else
-            string runpathSearchPaths;
+            string searchPaths;
 #if UNITY_2018_2_OR_NEWER
-            runpathSearchPaths = project.GetBuildPropertyForAnyConfig(targetGuid, "LD_RUNPATH_SEARCH_PATHS");
+            searchPaths = project.GetBuildPropertyForAnyConfig(targetGuid, "LD_RUNPATH_SEARCH_PATHS");
 #else
-            runpathSearchPaths = "$(inherited)";          
+            searchPaths = "$(inherited)";
 #endif
-            runpathSearchPaths += string.IsNullOrEmpty(runpathSearchPaths) ? "" : " ";
-
-            // Check if runtime search paths already contains the required search paths for dynamic libraries.
-            if (runpathSearchPaths.Contains("@executable_path/Frameworks")) return;
-
-            runpathSearchPaths += "@executable_path/Frameworks";
-            project.SetBuildProperty(targetGuid, "LD_RUNPATH_SEARCH_PATHS", runpathSearchPaths);
+            searchPaths += string.IsNullOrEmpty(searchPaths) ? "" : " ";
+            if (searchPaths.Contains("@executable_path/Frameworks")) return;
+            searchPaths += "@executable_path/Frameworks";
+            project.SetBuildProperty(targetGuid, "LD_RUNPATH_SEARCH_PATHS", searchPaths);
 #endif
         }
 
 #if UNITY_2018_2_OR_NEWER
 
-        private static void AddGoogleApplicationIdIfNeeded(PlistDocument plist)
+        private static void ConfigureAdmobAppIdentifier(PlistDocument plist)
         {
             if (!ATConfig.isNetworkInstalledByName("Admob", ATConfig.OS_IOS))
             {   

@@ -7,7 +7,6 @@
 //
 
 #import "ATNativeSelfRenderView.h"
-#import <AnyThinkSDK/ATImageLoader.h>
 #import "ATNativeAdWrapper.h"
 #import "ATAutolayoutCategories.h"
 #import "ATUnityUtilities.h"
@@ -25,7 +24,7 @@
 @implementation ATNativeSelfRenderView
 
 - (void)dealloc{
-    NSLog(@"🔥---ATNativeSelfRenderView--销毁");
+    NSLog(@"iOS: 🔥---ATNativeSelfRenderView--销毁");
 }
 
 - (instancetype) initWithOffer:(ATNativeAdOffer *)offer{
@@ -110,7 +109,7 @@
     NSString *imageBase64String = @"iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAAAXNSR0IArs4c6QAAAIRlWElmTU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAIAAIdpAAQAAAABAAAAWgAAAAAAAABIAAAAAQAAAEgAAAABAAOgAQADAAAAAQABAACgAgAEAAAAAQAAAEigAwAEAAAAAQAAAEgAAAAAYwsr7AAAAAlwSFlzAAALEwAACxMBAJqcGAAAABxpRE9UAAAAAgAAAAAAAAAkAAAAKAAAACQAAAAkAAACiSuooU0AAAJVSURBVHgB5JqhbsMwEECLisqGhldYNNaxqlJRP2CoY8Wjo/ub4UllI5VGy8f6ASMBA0XbvWiuXKtpnOQcO+lJJ8eRY989351dqYNBuzKU5W5EJ6IPogvRx39dS2ureb+U94zlm1vR3glQcA5Hn0RtCHWfmetOdCTaSbGh1IXg+52B1QlQgLkX1YoUX0iMIyVZO8moignGhWhACas0hMKJUa6hsfvYRJ2KJkTNVDQ2iLL1sRFbWxXyPMWoKYKFra3VJlIqRhEuct73PTYHT7mJLOJrUKrj8CGIcISm6nRVu/BFVfoQOS5EtUgib93J+9KnnjaSkXzdxYLsu4H4ho+1ZChfdeko94XijsNHfK0sXbgEus7W7eNrJelz3SmCWKkeXUNquaC8U61P9x0XQlm/9H5ERb/G6DHgONWGl4qRSvRsNpv3/X7/tdvtPufz+YssaAxQb99ElNe6GEWNowc4v5ZkWfYdCtK5tRQ2ozCKVE4udtPikz+GgOTCMWvOZjONiD37M2SpQH+93W4/jLF2qwmpCA5raPggc8DiREbSU6kP4/H4GUNtOOZZA1IRnMPh8LNarV61/JB5Toq1SnoZ46g5ISC1CIdgmYgehZBSiSAzjzakluHA4iTNVOFoQ4oABx7H04zfIEEAMW/TSIoEx/DgfwR5rpkXQdq6kCLDgUVeh6bsdGitCikBODCBTV6MggNiA3whJQIHJgsANf55gfO+Wgap6KIZ4J7jYzNs2gUEyEuQzKXSbiPBAWAOyIek+hhfSBHhGJ/904Pd19QySAnAWf8BAAD///Z/hqsAAAJUSURBVOWaoVLDQBCGT6HqUGgqq3CVnc5U9QFQwVVja3mMGjSamTpMXwBbXB8AU4Gogv1DfyYtuSS929xd2p25WSYkd/992d3bMBhjzCzmWK1Wb98W2263n+PxeB5Tn6wdD9ByuXy1sPm7nAAkcx8DUhM4pBQREtiEB2SDs9vtvgCDYIo+EqQpAE1kBKtDVXCyLHtCzUkIUg5oGApQHRzqSAgS2JgBhbXpm8KhhkQggY25pqi2/KlwqCMBSDeixVzJeKAobe8KhzoiQxIZv4ZipF6ofeFQUyRIeYHe89GvQ1pwIkK6JRx4pJlaBGnDobbAkdQDmKKppNlisXguNnj8GU0g+hxZ0OtFVEHabDYfvvPvnz9IL0IaaEwOkYRCrwWH+qogjUajOe/z8AfpJfPkhjTzPs3W6/U7wcBrwxGNeQTaIPX7/Ufe4+jz7y95ttTu5KpaCrQFhxqLkLDWixh/5+HBwGoqUSSzzxDqCm+z0ctSXAvR8684H9PyjiIA6uiojB6CQhRF+RtRZKiVtYdw6PEN0tUocNVdenIRSJkfXhAk7PVku5RUQ2phr06Giu7dG8kcrmHf9nPYW+2pVUfunOvRyXXHBkvlMySxSMKeVO2c+qNG/Y4LvXOIJPXIOQaJvO1i4YZm1NMg1pNVutRtQys0BzX0Dl1oJqHRuc/RIIqUSzGaoClYSjUBiZMhBVCoNdASNWpswJDnsUAlDaYMGFJvKqPtzwWsMZCRZMSIrlpDVGnCQqR0HkoVNRROvHGcLtgo6lZZ7eL1yf5ePIP/IwgaKT805vxmzF7SHAAAAABJRU5ErkJggg==";
         
     UIImage *closeImage = [UIImage imageWithData:[[NSData alloc] initWithBase64EncodedString:imageBase64String options:NSDataBase64DecodingIgnoreUnknownCharacters]];
-    NSLog(@"getCloseImage--%@",closeImage);
+    NSLog(@"iOS: getCloseImage--%@",closeImage);
     return closeImage;
 }
 
@@ -130,7 +129,7 @@
     }];
     
     
-    NSLog(@"🔥----iconUrl:%@",self.nativeAdOffer.nativeAd.iconUrl);
+    NSLog(@"iOS: 🔥----iconUrl:%@",self.nativeAdOffer.nativeAd.iconUrl);
 
     [[ATImageLoader shareLoader]loadImageWithURL:[NSURL URLWithString:self.nativeAdOffer.nativeAd.imageUrl] completion:^(UIImage *image, NSError *error) {
             
@@ -142,7 +141,7 @@
     }];
     
     
-    NSLog(@"🔥----imageUrl:%@",self.nativeAdOffer.nativeAd.imageUrl);
+    NSLog(@"iOS: 🔥----imageUrl:%@",self.nativeAdOffer.nativeAd.imageUrl);
     
     self.advertiserLabel.text = self.nativeAdOffer.nativeAd.advertiser;
 

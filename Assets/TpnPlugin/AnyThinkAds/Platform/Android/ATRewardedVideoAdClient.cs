@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -24,6 +24,7 @@ namespace AnyThinkAds.Android
         public event EventHandler<ATAdEventArgs>		onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs>		onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs>	onAdSourceBiddingFailureEvent;
+        public event EventHandler<ATAdEventArgs>        onAdMultipleLoadedEvent;
         public event EventHandler<ATAdEventArgs>		onPlayAgainStart;
         public event EventHandler<ATAdEventArgs>		onPlayAgainEnd;
         public event EventHandler<ATAdErrorEventArgs>	onPlayAgainFailure;
@@ -37,6 +38,9 @@ namespace AnyThinkAds.Android
 
         //private  AndroidJavaObject videoHelper;
         private  ATRewardedVideoListener anyThinkListener;
+
+        private IATAdRevenueListener mAutoRevenue;
+        private Dictionary<string, IATAdRevenueListener> mAdRevenueByPlacement = new Dictionary<string, IATAdRevenueListener>();
 
         public ATRewardedVideoAdClient() : base("com.secmtp.sdk.unitybridge.videoad.VideoListener")
         {
@@ -54,6 +58,7 @@ namespace AnyThinkAds.Android
                 videoHelper.Call("initVideo", placementId);
                 videoHelperMap.Add(placementId, videoHelper);
                 Debug.Log("ATRewardedVideoAdClient : no exit helper ,create helper ");
+                ApplyAdRevenueListenerIfNeeded(placementId);
             }
 
             try
@@ -111,12 +116,24 @@ namespace AnyThinkAds.Android
         }
 
         public void entryScenarioWithPlacementID(string placementId, string scenarioID){
+            entryScenarioWithPlacementID(placementId, scenarioID, null);
+        }
+
+        public void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson)
+        {
             Debug.Log("ATRewardedVideoAdClient : entryScenarioWithPlacementID....");
             try
             {
                 if (videoHelperMap.ContainsKey(placementId))
                 {
-                    videoHelperMap[placementId].Call("entryAdScenario", scenarioID);
+                    if (string.IsNullOrEmpty(tkExtraJson))
+                    {
+                        videoHelperMap[placementId].Call("entryAdScenario", scenarioID);
+                    }
+                    else
+                    {
+                        videoHelperMap[placementId].Call("entryAdScenario", scenarioID, tkExtraJson);
+                    }
                 }
             }
             catch (System.Exception e)
@@ -124,7 +141,61 @@ namespace AnyThinkAds.Android
                 System.Console.WriteLine("Exception caught: {0}", e);
                 Debug.Log("ATRewardedVideoAdClient entryScenarioWithPlacementID:  error." + e.Message);
             }
+        }
 
+        /// <summary>
+        /// Same idea as <c>setListener</c>: store the listener first; after <c>loadVideoAd</c> creates the per-placement
+        /// VideoHelper, we register on native (splash already did this via <c>getSplashHelper</c> creating the helper eagerly).
+        /// </summary>
+        public void setAdRevenueListener(string placementId, IATAdRevenueListener listener)
+        {
+            if (listener == null)
+            {
+                mAdRevenueByPlacement.Remove(placementId);
+            }
+            else
+            {
+                mAdRevenueByPlacement[placementId] = listener;
+            }
+            ApplyAdRevenueListenerIfNeeded(placementId);
+        }
+
+        private void ApplyAdRevenueListenerIfNeeded(string placementId)
+        {
+            if (string.IsNullOrEmpty(placementId) || videoHelperMap == null || !videoHelperMap.ContainsKey(placementId))
+            {
+                return;
+            }
+            if (mAdRevenueByPlacement == null || !mAdRevenueByPlacement.ContainsKey(placementId))
+            {
+                return;
+            }
+            try
+            {
+                videoHelperMap[placementId].Call("setAdRevenueListener");
+            }
+            catch (System.Exception e)
+            {
+                System.Console.WriteLine("Exception caught: {0}", e);
+                Debug.Log("ATRewardedVideoAdClient ApplyAdRevenueListenerIfNeeded:  error." + e.Message);
+            }
+        }
+
+        public void setAutoAdRevenueListener(IATAdRevenueListener listener)
+        {
+            mAutoRevenue = listener;
+            try
+            {
+                if (videoAutoAdHelper != null)
+                {
+                    videoAutoAdHelper.Call("setAdRevenueListener");
+                }
+            }
+            catch (System.Exception e)
+            {
+                System.Console.WriteLine("Exception caught: {0}", e);
+                Debug.Log("ATRewardedVideoAdClient setAutoAdRevenueListener:  error." + e.Message);
+            }
         }
     
         
@@ -162,6 +233,11 @@ namespace AnyThinkAds.Android
 				Debug.Log ("ATRewardedVideoAdClient :  error."+e.Message);
 
 			}
+        }
+
+        public void showAdWithShowConfig(string placementId, string showConfigJson)
+        {
+            showAd(placementId, showConfigJson);
         }
 
 
@@ -255,6 +331,33 @@ namespace AnyThinkAds.Android
             onPlayAgainReward?.Invoke(this, new ATAdRewardEventArgs(placementId, callbackJson, true));
         }
 
+        public void onAdRevenuePaid(string placementId, string atAdInfoJson)
+        {
+            IATAdRevenueListener l = null;
+            if (mAdRevenueByPlacement != null && mAdRevenueByPlacement.TryGetValue(placementId, out l) && l != null)
+            {
+                try
+                {
+                    l.onAdRevenuePaid(placementId, new ATCallbackInfo(atAdInfoJson));
+                }
+                catch (System.Exception e)
+                {
+                    Debug.Log("onAdRevenuePaid: " + e.Message);
+                }
+            }
+            else if (mAutoRevenue != null)
+            {
+                try
+                {
+                    mAutoRevenue.onAdRevenuePaid(placementId, new ATCallbackInfo(atAdInfoJson));
+                }
+                catch (System.Exception e)
+                {
+                    Debug.Log("onAdRevenuePaid (auto): " + e.Message);
+                }
+            }
+        }
+
         // Adsource Listener
         public void onAdSourceBiddingAttempt(string placementId, string callbackJson)
         {
@@ -290,6 +393,11 @@ namespace AnyThinkAds.Android
         {
             Debug.Log("onAdSourceLoadFail...unity3d." + placementId + "," + code + "," + error + "," + callbackJson);
             onAdSourceLoadFailureEvent?.Invoke(this,new ATAdErrorEventArgs(placementId, code, error));
+        }
+
+        public void onAdMultipleLoaded(string placementId, string requestingInfoJson)
+        {
+            onAdMultipleLoadedEvent?.Invoke(this, new ATAdEventArgs(placementId, requestingInfoJson ?? ""));
         }
 
 
@@ -367,12 +475,24 @@ namespace AnyThinkAds.Android
             }
         }
 
-        public void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID) 
+		public void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID) 
+        {
+            entryAutoAdScenarioWithPlacementID(placementId, scenarioID, null);
+        }
+
+        public void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson)
         {
             Debug.Log("Unity: ATRewardedVideoAdClient:entryAutoAdScenarioWithPlacementID()");
             try
             {
-                videoAutoAdHelper.Call("entryAdScenario", placementId, scenarioID);
+                if (string.IsNullOrEmpty(tkExtraJson))
+                {
+                    videoAutoAdHelper.Call("entryAdScenario", placementId, scenarioID);
+                }
+                else
+                {
+                    videoAutoAdHelper.Call("entryAdScenario", placementId, scenarioID, tkExtraJson);
+                }
             }
             catch (System.Exception e)
             {

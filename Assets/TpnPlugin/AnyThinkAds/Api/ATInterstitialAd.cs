@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
@@ -58,6 +58,17 @@ namespace AnyThinkAds.Api
         {
             client.entryScenarioWithPlacementID(placementId,scenarioID);
         }
+
+        public void entryScenarioWithPlacementID(string placementId, string scenarioID, Dictionary<string, object> tkExtra)
+        {
+            string j = (tkExtra != null) ? JsonMapper.ToJson(tkExtra) : null;
+            client.entryScenarioWithPlacementID(placementId, scenarioID, j);
+        }
+
+        public void setAdRevenueListener(string placementId, IATAdRevenueListener listener)
+        {
+            client.setAdRevenueListener(placementId, listener);
+        }
         
 
         public string checkAdStatus(string placementId)
@@ -78,7 +89,7 @@ namespace AnyThinkAds.Api
         public void showInterstitialAd(string placementId, Dictionary<string, string> pairs)
         {
             client.showInterstitialAd(placementId, JsonMapper.ToJson(pairs));
-        }
+        } 
 
         public IATInterstitialAdClient GetATInterstitialAdClient()
         {

@@ -23,6 +23,7 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
         public NetworkRequestParams requestParams;
     }
     //请求network参数
+     [Serializable]
     public class NetworkRequestParams {
         public int os;
         public string androidVersion;
@@ -32,22 +33,7 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
     [Serializable]
     public class Network : IComparable<Network>
     {
-        //
-        // Sample network data:
-        //
-        // {
-        //   "Name": "adcolony",
-        //   "DisplayName": "AdColony",
-        //   "DownloadUrl": "https://bintray.com/applovin/Unity-Mediation-Packages/download_file?file_path=AppLovin-AdColony-Adapters-Android-3.3.10.1-iOS-3.3.7.2.unitypackage",
-        //   "PluginFileName": "AppLovin-AdColony-Adapters-Android-3.3.10.1-iOS-3.3.7.2.unitypackage",
-        //   "DependenciesFilePath": "MaxSdk/Mediation/AdColony/Editor/Dependencies.xml",
-        //   "LatestVersions" : {
-        //     "Unity": "android_3.3.10.1_ios_3.3.7.2",
-        //     "Android": "3.3.10.1",
-        //     "Ios": "3.3.7.2"
-        //   }
-        // }
-        //
+        
 
         public string Name;
         public string DisplayName;

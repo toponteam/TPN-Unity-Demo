@@ -1,5 +1,6 @@
 <dependencies>
     <androidPackages>
-        <androidPackage spec="com.google.android.gms:play-services-ads:24.7.0"/>
+        <androidPackage spec="com.anythink.sdk:adapter-tpn-admob:25.3.0.1.0"/>
+        <androidPackage spec="com.google.android.gms:play-services-ads:25.3.0"/>
     </androidPackages>
 </dependencies>

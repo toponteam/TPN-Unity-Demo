@@ -16,7 +16,7 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
 
     public class ATConfig
     {
-public static string PLUGIN_VERSION = "2.1.6";
+public static string PLUGIN_VERSION = "2.1.8";
 public static bool isDebug = false;
 
         public static int PLUGIN_TYPE = 2;
@@ -387,7 +387,8 @@ public static bool isDebug = false;
             if(PLUGIN_TYPE == 2) {
                 return new string[] { "Overseas" };
             }
-            return new string[] { "ChinaMainland", "Overseas" };
+            // return new string[] { "ChinaMainland", "Overseas" };
+            return new string[] { "ChinaMainland" };
         }
 
         public static string getRegionIntegrateTip()

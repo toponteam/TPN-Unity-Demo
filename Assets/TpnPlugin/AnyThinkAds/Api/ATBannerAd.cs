@@ -122,6 +122,22 @@ namespace AnyThinkAds.Api
             client.cleanBannerAd(placementId);
         }
 
+        public void entryScenarioWithPlacementID(string placementId, string scenarioID)
+        { 
+            client.entryScenarioWithPlacementID(placementId, scenarioID, null);
+        }
+
+        public void entryScenarioWithPlacementID(string placementId, string scenarioID, Dictionary<string, object> tkExtra)
+        {
+            string j = (tkExtra != null) ? JsonMapper.ToJson(tkExtra) : null;
+            client.entryScenarioWithPlacementID(placementId, scenarioID, j);
+        }
+
+        public void setAdRevenueListener(string placementId, IATAdRevenueListener listener)
+        {
+            client.setAdRevenueListener(placementId, listener);
+        }
+
         public IATBannerAdClient GetATBannerAdClient()
         {
             return AnyThinkAds.ATAdsClientFactory.BuildBannerAdClient();

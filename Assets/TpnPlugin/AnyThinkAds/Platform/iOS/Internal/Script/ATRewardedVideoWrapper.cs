@@ -3,12 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using AOT;
+using AnyThinkAds.Api;
 using AnyThinkAds.ThirdParty.LitJson;
 using AnyThinkAds.iOS;
 #pragma warning disable 0109
 public class ATRewardedVideoWrapper:ATAdWrapper {
     static private Dictionary<string, ATRewardedVideoAdClient> clients;
 	static private string CMessageReceiverClass = "ATRewardedVideoWrapper";
+
+	static private readonly Dictionary<string, IATAdRevenueListener> sRevenueByPlacement = new Dictionary<string, IATAdRevenueListener>();
+	static private IATAdRevenueListener autoRevenueListener;
+
+	/// <summary>记录各 placement 最近一次展示是否来自 auto 展示（true）或手动展示（false），用于收益回调选择监听。</summary>
+	private static readonly Dictionary<string, bool> sLastShowWasAutoByPlacement = new Dictionary<string, bool>();
+    
 
     static public new void InvokeCallback(JsonData jsonData) {
         Debug.Log("Unity: ATRewardedVideoWrapper::InvokeCallback()");
@@ -88,9 +96,16 @@ public class ATRewardedVideoWrapper:ATAdWrapper {
     		if (errorMsg["code"] != null) { errorDict.Add("code", errorMsg["code"]); }
     		if (errorMsg["reason"] != null) { errorDict.Add("message", errorMsg["reason"]); }
     		FailBiddingADSource((string)msgDict["placement_id"],extraJson, errorDict);
+        } 
+        else if (callback.Equals("OnAdMultipleLoaded")) {
+            OnAdMultipleLoaded((string)msgDict["placement_id"], extraJson ?? "");
+            Debug.Log("Unity: ATRewardedVideoWrapper::OnAdMultipleLoaded(" + (string)msgDict["placement_id"] + ", " + extraJson + ")");
         }
+        else if (callback.Equals("OnAdRevenuePaid")) {
+            string placementId = (string)msgDict["placement_id"];
+            notifyAdRevenuePaidFromCallbackJson(placementId, extraJson); 
 
-
+        }
     }
 
     //Public method(s)
@@ -117,7 +132,18 @@ public class ATRewardedVideoWrapper:ATAdWrapper {
 
     static public void showRewardedVideo(string placementID, string mapJson) {
 	    Debug.Log("Unity: ATRewardedVideoWrapper::showRewardedVideo(" + placementID + ")");
+		if (!string.IsNullOrEmpty(placementID)) {
+			sLastShowWasAutoByPlacement[placementID] = false;
+		} 
     	ATUnityCBridge.SendMessageToC(CMessageReceiverClass, "showRewardedVideoWithPlacementID:extraJsonString:", new object[]{placementID, mapJson});
+    }
+
+    static public void showRewardedVideoWithShowConfig(string placementID, string showConfigJson) {
+        Debug.Log("Unity: ATRewardedVideoWrapper::showRewardedVideoWithShowConfig(" + placementID + ")");
+        if (!string.IsNullOrEmpty(placementID)) {
+            sLastShowWasAutoByPlacement[placementID] = false;
+        }
+        ATUnityCBridge.SendMessageToC(CMessageReceiverClass, "showRewardedVideoWithPlacementID:showConfigJsonString:", new object[] { placementID, showConfigJson ?? "" });
     }
 
     static public void clearCache() {
@@ -136,16 +162,23 @@ public class ATRewardedVideoWrapper:ATAdWrapper {
         return ATUnityCBridge.GetStringMessageFromC(CMessageReceiverClass, "getValidAdCaches:", new object[] { placementID });
     }
 
-    static public void entryScenarioWithPlacementID(string placementID, string scenarioID) 
+    static public void entryScenarioWithPlacementID(string placementID, string scenarioID, string tkExtraJson) 
     {
     	Debug.Log("Unity: ATRewardedVideoWrapper::entryScenarioWithPlacementID(" + placementID + scenarioID + ")");
-    	ATUnityCBridge.SendMessageToC(CMessageReceiverClass, "entryScenarioWithPlacementID:scenarioID:", new object[]{placementID, scenarioID});
+    	ATUnityCBridge.SendMessageToC(CMessageReceiverClass, "entryScenarioWithPlacementID:scenarioID:tkExtraJson:", new object[]{placementID, scenarioID, tkExtraJson});
     }
 
     //Callbacks
     static public void OnRewardedVideoLoaded(string placementID) {
     	Debug.Log("Unity: ATRewardedVideoWrapper::OnRewardedVideoLoaded()");
         if (clients[placementID] != null) clients[placementID].onRewardedVideoAdLoaded(placementID);
+    }
+
+    static private void OnAdMultipleLoaded(string placementID, string requestingInfoJson) {
+        if (clients == null || !clients.ContainsKey(placementID) || clients[placementID] == null) {
+            return;
+        }
+        clients[placementID].onAdMultipleLoaded(placementID, requestingInfoJson ?? "");
     }
 
     static public void OnRewardedVideoLoadFailure(string placementID, Dictionary<string, object> errorDict) {
@@ -183,6 +216,8 @@ public class ATRewardedVideoWrapper:ATAdWrapper {
     {
         Debug.Log("Unity: ATRewardedVideoWrapper::OnRewardedVideoReward()");
         if (clients[placementID] != null) clients[placementID].onRewardedVideoReward(placementID, callbackJson);
+
+        
     }
 
     //------again callback
@@ -255,14 +290,21 @@ public class ATRewardedVideoWrapper:ATAdWrapper {
     	ATUnityCBridge.SendMessageToC(CMessageReceiverClass, "setAutoLocalExtra:customDataJSONString:", new object[] {placementID, customData != null ? customData : ""});
     }
 
-    static public void entryAutoAdScenarioWithPlacementID(string placementID, string scenarioID) 
-    {
-    	Debug.Log("Unity: ATRewardedVideoWrapper::entryAutoAdScenarioWithPlacementID(" + placementID + scenarioID + ")");
-    	ATUnityCBridge.SendMessageToC(CMessageReceiverClass, "entryAutoAdScenarioWithPlacementID:scenarioID:", new object[]{placementID, scenarioID});
+    static public void entryAutoAdScenarioWithPlacementID(string placementID, string scenarioID, string tkExtraJson) 
+    {   
+        Debug.Log("Unity: ATRewardedVideoWrapper::entryAutoAdScenarioWithPlacementID(" + placementID + scenarioID + ")");
+        if (string.IsNullOrEmpty(tkExtraJson)) {
+            ATUnityCBridge.SendMessageToC(CMessageReceiverClass, "entryAutoAdScenarioWithPlacementID:scenarioID:", new object[]{placementID, scenarioID});
+        } else {
+            ATUnityCBridge.SendMessageToC(CMessageReceiverClass, "entryAutoAdScenarioWithPlacementID:scenarioID:tkExtraJson:", new object[]{placementID, scenarioID, tkExtraJson});
+        }
     }
 
     static public void showAutoRewardedVideo(string placementID, string mapJson) {
 	    Debug.Log("Unity: ATRewardedVideoWrapper::showAutoRewardedVideo(" + placementID + ")");
+		if (!string.IsNullOrEmpty(placementID)) {
+			sLastShowWasAutoByPlacement[placementID] = true;
+		}
     	ATUnityCBridge.SendMessageToC(CMessageReceiverClass, "showAutoRewardedVideoWithPlacementID:extraJsonString:", new object[]{placementID, mapJson});
     }
 
@@ -303,10 +345,51 @@ public class ATRewardedVideoWrapper:ATAdWrapper {
 
         Debug.Log("placementID = " + placementID + "errorDict = " + JsonMapper.ToJson(errorDict));
         if (clients[placementID] != null) clients[placementID].failBiddingADSource(placementID,callbackJson,(string)errorDict["code"], (string)errorDict["message"]);
-    }   
+    }    
 
+    static public void setAdRevenueListener(string placementId, IATAdRevenueListener listener) {
+        Debug.Log("Unity: ATRewardedVideoWrapper::setAdRevenueListener(placementId=" + placementId + ", listener=" + (listener != null ? "set" : "clear") + ")");
+        if (string.IsNullOrEmpty(placementId)) {
+            return;
+        }
+        if (listener == null) {
+            sRevenueByPlacement.Remove(placementId);
+        } else {
+            sRevenueByPlacement[placementId] = listener;
+        }
+    }
+    static public void setAutoAdRevenueListener(IATAdRevenueListener listener) {
+        Debug.Log("Unity: ATRewardedVideoWrapper::setAutoAdRevenueListener(listener=" + (listener != null ? "set" : "clear") + ")");
+        if (listener == null) {
+            autoRevenueListener = null;
+        } else {
+            autoRevenueListener = listener;
+        }
+    }
 
-
+    /// <summary>将原生下发的 extra/callback JSON 解析为 <see cref="ATCallbackInfo"/> 并派发给收益监听；手动监听按 placement 存于 <c>sRevenueByPlacement</c>（与插屏/Banner 等一致），auto 监听为 <c>autoRevenueListener</c>。</summary>
+    static private void notifyAdRevenuePaidFromCallbackJson(string placementId, string callbackJson) {
+        if (string.IsNullOrEmpty(callbackJson)) {
+            return;
+        }
+        bool useAutoListener = sLastShowWasAutoByPlacement.TryGetValue(placementId, out bool wasAuto) && wasAuto;
+        IATAdRevenueListener target = useAutoListener ? autoRevenueListener : null;
+        if (!useAutoListener && !string.IsNullOrEmpty(placementId)) {
+            sRevenueByPlacement.TryGetValue(placementId, out target);
+        }
+        if (target == null) {
+            return;
+        }
+        string listenerSource = useAutoListener ? "autoRevenueListener" : "perPlacement";
+        try {
+            var info = new ATCallbackInfo(callbackJson);
+            target.onAdRevenuePaid(placementId, info);
+            Debug.Log("Unity: ATRewardedVideoWrapper notifyAdRevenuePaidFromCallbackJson: onAdRevenuePaid placementId=" + placementId
+                + " source=" + listenerSource + " rawJson=" + callbackJson);
+        } catch (Exception e) {
+            Debug.Log("Unity: ATRewardedVideoWrapper notifyAdRevenuePaidFromCallbackJson: " + e.Message);
+        }
+    }
 
 }
 

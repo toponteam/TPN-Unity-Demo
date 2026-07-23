@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,11 +25,15 @@ namespace AnyThinkAds.Android
         public event EventHandler<ATAdEventArgs>        onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs>        onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs>   onAdSourceBiddingFailureEvent;
+        public event EventHandler<ATAdEventArgs>        onAdMultipleLoadedEvent;
 
         private Dictionary<string, AndroidJavaObject> interstitialHelperMap = new Dictionary<string, AndroidJavaObject>();
 
 		//private  AndroidJavaObject videoHelper;
         private  ATInterstitialAdListener anyThinkListener;
+
+        private IATAdRevenueListener mAutoRevenue;
+        private Dictionary<string, IATAdRevenueListener> mAdRevenueByPlacement = new Dictionary<string, IATAdRevenueListener>();
 
         private AndroidJavaObject interstitialAutoAdHelper;
 
@@ -50,6 +54,7 @@ namespace AnyThinkAds.Android
                 videoHelper.Call("initInterstitial", placementId);
                 interstitialHelperMap.Add(placementId, videoHelper);
                 Debug.Log("ATInterstitialAdClient : no exit helper ,create helper ");
+                ApplyAdRevenueListenerIfNeeded(placementId);
             }
 
             try
@@ -107,12 +112,24 @@ namespace AnyThinkAds.Android
         }
         
         public void entryScenarioWithPlacementID(string placementId, string scenarioID){
+            entryScenarioWithPlacementID(placementId, scenarioID, null);
+        }
+
+        public void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson)
+        {
             Debug.Log("ATInterstitialAdClient : entryScenarioWithPlacementID....");
             try
             {
                 if (interstitialHelperMap.ContainsKey(placementId))
                 {
-                    interstitialHelperMap[placementId].Call("entryAdScenario", scenarioID);
+                    if (string.IsNullOrEmpty(tkExtraJson))
+                    {
+                        interstitialHelperMap[placementId].Call("entryAdScenario", scenarioID);
+                    }
+                    else
+                    {
+                        interstitialHelperMap[placementId].Call("entryAdScenario", scenarioID, tkExtraJson);
+                    }
                 }
             }
             catch (System.Exception e)
@@ -120,8 +137,57 @@ namespace AnyThinkAds.Android
                 System.Console.WriteLine("Exception caught: {0}", e);
                 Debug.Log("ATInterstitialAdClient entryScenarioWithPlacementID:  error." + e.Message);
             }
+        }
 
+        public void setAdRevenueListener(string placementId, IATAdRevenueListener listener)
+        {
+            if (listener == null)
+            {
+                mAdRevenueByPlacement.Remove(placementId);
+            }
+            else
+            {
+                mAdRevenueByPlacement[placementId] = listener;
+            }
+            ApplyAdRevenueListenerIfNeeded(placementId);
+        }
 
+        private void ApplyAdRevenueListenerIfNeeded(string placementId)
+        {
+            if (string.IsNullOrEmpty(placementId) || interstitialHelperMap == null || !interstitialHelperMap.ContainsKey(placementId))
+            {
+                return;
+            }
+            if (mAdRevenueByPlacement == null || !mAdRevenueByPlacement.ContainsKey(placementId))
+            {
+                return;
+            }
+            try
+            {
+                interstitialHelperMap[placementId].Call("setAdRevenueListener");
+            }
+            catch (System.Exception e)
+            {
+                System.Console.WriteLine("Exception caught: {0}", e);
+                Debug.Log("ATInterstitialAdClient ApplyAdRevenueListenerIfNeeded:  error." + e.Message);
+            }
+        }
+
+        public void setAutoAdRevenueListener(IATAdRevenueListener listener)
+        {
+            mAutoRevenue = listener;
+            try
+            {
+                if (interstitialAutoAdHelper != null)
+                {
+                    interstitialAutoAdHelper.Call("setAdRevenueListener");
+                }
+            }
+            catch (System.Exception e)
+            {
+                System.Console.WriteLine("Exception caught: {0}", e);
+                Debug.Log("ATInterstitialAdClient setAutoAdRevenueListener:  error." + e.Message);
+            }
         }
 
 
@@ -160,6 +226,10 @@ namespace AnyThinkAds.Android
 			}
         }
 
+        public void showAdWithShowConfig(string placementId, string showConfigJson)
+        {
+            showInterstitialAd(placementId, showConfigJson);
+        }
 
         public void cleanCache(string placementId)
         {
@@ -304,6 +374,38 @@ namespace AnyThinkAds.Android
             onAdSourceLoadFailureEvent?.Invoke(this, new ATAdErrorEventArgs(placementId, callbackJson, code, error));
         }
 
+        public void onAdMultipleLoaded(string placementId, string requestingInfoJson)
+        {
+            onAdMultipleLoadedEvent?.Invoke(this, new ATAdEventArgs(placementId, requestingInfoJson ?? ""));
+        }
+
+        public void onAdRevenuePaid(string placementId, string atAdInfoJson)
+        {
+            IATAdRevenueListener l = null;
+            if (mAdRevenueByPlacement != null && mAdRevenueByPlacement.TryGetValue(placementId, out l) && l != null)
+            {
+                try
+                {
+                    l.onAdRevenuePaid(placementId, new ATCallbackInfo(atAdInfoJson));
+                }
+                catch (System.Exception e)
+                {
+                    Debug.Log("onAdRevenuePaid: " + e.Message);
+                }
+            }
+            else if (mAutoRevenue != null)
+            {
+                try
+                {
+                    mAutoRevenue.onAdRevenuePaid(placementId, new ATCallbackInfo(atAdInfoJson));
+                }
+                catch (System.Exception e)
+                {
+                    Debug.Log("onAdRevenuePaid (auto): " + e.Message);
+                }
+            }
+        }
+
         // Auto
         public void addAutoLoadAdPlacementID(string[] placementIDList){
             Debug.Log("Unity: ATInterstitialAdClient:addAutoLoadAdPlacementID()" + JsonMapper.ToJson(placementIDList));
@@ -380,10 +482,22 @@ namespace AnyThinkAds.Android
 
         public void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID) 
 		{
+			entryAutoAdScenarioWithPlacementID(placementId, scenarioID, null);
+        }
+
+        public void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson)
+		{
 			Debug.Log("Unity: ATInterstitialAdClient:entryAutoAdScenarioWithPlacementID()");
             try
             {
-                interstitialAutoAdHelper.Call("entryAdScenario", placementId, scenarioID);
+                if (string.IsNullOrEmpty(tkExtraJson))
+                {
+                    interstitialAutoAdHelper.Call("entryAdScenario", placementId, scenarioID);
+                }
+                else
+                {
+                    interstitialAutoAdHelper.Call("entryAdScenario", placementId, scenarioID, tkExtraJson);
+                }
             }
             catch (System.Exception e)
             {

@@ -1,5 +1,0 @@
-<dependencies>
-    <androidPackages>
-        <androidPackage spec="com.my.target:mytarget-sdk:5.27.1"/>
-    </androidPackages>
-</dependencies>

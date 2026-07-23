@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using AnyThinkAds.Api;
 using AnyThinkAds.Common;
@@ -144,9 +144,12 @@ namespace AnyThinkAds
         public void initSDK(string appId, string appkey){}
         public void initSDK(string appId, string appkey, ATSDKInitListener listener){ }
         public void getUserLocation(ATGetUserLocationListener listener){ }
+        public void checkIsEuTraffic(ATGetUserLocationListener listener, string appId) { }
         public void setGDPRLevel(int level){ }
         public void showGDPRAuth(){ }
         public void showGDPRConsentDialog(ATConsentDismissListener listener){ }
+        public void showGDPRConsentDialog(ATConsentDismissListener listener, string appId) { }
+        public void showGDPRConsentSecondDialog(ATConsentDismissListener listener, string appId) { }
         public void addNetworkGDPRInfo(int networkType, string mapJson){ }
         public void setChannel(string channel){ }
         public void setSubChannel(string subchannel){ }
@@ -164,6 +167,14 @@ namespace AnyThinkAds
         public void setLocation(double longitude, double latitude) { }
         public void showDebuggerUI() {}
         public void showDebuggerUI(string debugKey) {}
+        public void start() { }
+        public void setLocalStrategyAssetPath(string assetPath) { }
+        public string getSDKVersion() { return ""; }
+        public void setSharedPlacementConfig(string configJson) { }
+        public void setAdSourcePrivacyPolicy(string policyJson) { }
+        public void putFilter(string placementId, string filterJson) { }
+        public void removeFilterWithPlacementId(string placementId) { }
+        public void removeFilters() { }
     }
 
     class UnityBannerClient:IATBannerAdClient
@@ -182,6 +193,9 @@ namespace AnyThinkAds
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs> onAdSourceBiddingFailureEvent;
+        public event EventHandler<ATAdEventArgs> onAdMultipleLoadedEvent;
+
+        
        ATBannerAdListener listener;
        public void loadBannerAd(string unitId, string mapJson){
             if(listener != null)
@@ -214,6 +228,8 @@ namespace AnyThinkAds
        public void cleanCache(string unitId){}
 
         public string getValidAdCaches(string unitId) { return ""; }
+        public void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson) { }
+        public void setAdRevenueListener(string placementId, IATAdRevenueListener listener) { }
     }
 
     class UnityInterstitialClient : IATInterstitialAdClient
@@ -236,6 +252,7 @@ namespace AnyThinkAds
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs> onAdSourceBiddingFailureEvent;
+        public event EventHandler<ATAdEventArgs> onAdMultipleLoadedEvent;
 
        public void loadInterstitialAd(string unitId, string mapJson){
             if (listener != null)
@@ -259,6 +276,8 @@ namespace AnyThinkAds
         public string getValidAdCaches(string unitId) { return ""; }
 
         public void entryScenarioWithPlacementID(string placementId, string scenarioID){}
+        public void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson) { }
+        public void setAdRevenueListener(string placementId, IATAdRevenueListener listener) { }
 
         
 		public void addAutoLoadAdPlacementID(string[] placementIDList) {}
@@ -274,6 +293,8 @@ namespace AnyThinkAds
         public void setAutoLocalExtra(string placementId, string mapJson){}
 
         public void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID){}
+        public void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson) { }
+        public void setAutoAdRevenueListener(IATAdRevenueListener listener) { }
 
 		public void showAutoAd(string placementId, string mapJson){}
 
@@ -296,6 +317,7 @@ namespace AnyThinkAds
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs> onAdSourceBiddingFailureEvent;
+        public event EventHandler<ATAdEventArgs> onAdMultipleLoadedEvent;
 
         ATNativeAdListener listener;
        public void loadNativeAd(string unitId, string mapJson){
@@ -312,7 +334,8 @@ namespace AnyThinkAds
        public string getValidAdCaches(string unitId) { return ""; }
 
        public void entryScenarioWithPlacementID(string placementId, string scenarioID){}
-
+       public void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson) { }
+       public void setAdRevenueListener(string placementId, IATAdRevenueListener listener) { }
 
         public void setListener(ATNativeAdListener listener){
             this.listener = listener;
@@ -350,8 +373,11 @@ namespace AnyThinkAds
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs> onAdSourceBiddingFailureEvent;
+        public event EventHandler<ATAdEventArgs> onAdMultipleLoadedEvent;
+        
         ATNativeBannerAdListener listener;
-       public void loadAd(string unitId, string mapJson){
+       
+        public void loadAd(string unitId, string mapJson){
             if(listener != null)
             {
                  listener.onAdLoadFail(unitId, "-1", "Must run on Android or IOS platform!");
@@ -385,6 +411,7 @@ namespace AnyThinkAds
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs> onAdSourceBiddingFailureEvent;
+        public event EventHandler<ATAdEventArgs> onAdMultipleLoadedEvent;
         public event EventHandler<ATAdEventArgs> onPlayAgainStart;
         public event EventHandler<ATAdEventArgs> onPlayAgainEnd;
         public event EventHandler<ATAdErrorEventArgs> onPlayAgainFailure;
@@ -410,8 +437,11 @@ namespace AnyThinkAds
         public string getValidAdCaches(string unitId) { return ""; }
 
         public void entryScenarioWithPlacementID(string placementId, string scenarioID){}
+        public void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson) { }
+        public void setAdRevenueListener(string placementId, IATAdRevenueListener listener) { }
 
         public void showAd(string unitId, string mapJson){}
+
 
 		public void addAutoLoadAdPlacementID(string[] placementIDList) {}
 
@@ -426,6 +456,8 @@ namespace AnyThinkAds
         public void setAutoLocalExtra(string placementId, string mapJson){}
 
         public void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID){}
+        public void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson) { }
+        public void setAutoAdRevenueListener(IATAdRevenueListener listener) { }
 
 		public void showAutoAd(string placementId, string mapJson){}
 
@@ -462,6 +494,7 @@ namespace AnyThinkAds
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs> onAdSourceBiddingFailureEvent;
+        public event EventHandler<ATAdEventArgs> onAdMultipleLoadedEvent;
         public event EventHandler<ATAdEventArgs> onPlayAgainStart;
         public event EventHandler<ATAdEventArgs> onPlayAgainEnd;
         public event EventHandler<ATAdErrorEventArgs> onPlayAgainFailure;
@@ -489,5 +522,7 @@ namespace AnyThinkAds
         }
 
         public void entryScenarioWithPlacementID(string placementId, string scenarioID) {}
+        public void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson) { }
+        public void setAdRevenueListener(string placementId, IATAdRevenueListener listener) { }
     }
 }

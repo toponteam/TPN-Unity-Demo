@@ -146,7 +146,7 @@
             return [NSArray array];
         }
     } @catch (NSException *exception) {
-        NSLog(@"jsonStrToArray --- exception:%@",exception);
+        NSLog(@"iOS: jsonStrToArray --- exception:%@",exception);
     } @finally {}
     
     return array;

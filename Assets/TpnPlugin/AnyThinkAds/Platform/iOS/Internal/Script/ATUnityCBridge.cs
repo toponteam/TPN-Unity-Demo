@@ -21,8 +21,7 @@ public class ATUnityCBridge {
     #endif
 
     [MonoPInvokeCallback(typeof(CCallBack))]
-    static public void MessageFromC(string wrapperClass, string msg) {
-        Debug.Log("Unity: ATUnityCBridge::MessageFromC(" + wrapperClass + "," + msg + ")");
+    static public void MessageFromC(string wrapperClass, string msg) { 
         JsonData jsonData = JsonMapper.ToObject(msg);
         if (wrapperClass.Equals("ATRewardedVideoWrapper")) {
             Debug.Log("Unity: ATUnityCBridge::MessageFromC(), hit rv");
@@ -58,7 +57,6 @@ public class ATUnityCBridge {
     }
 
     static public string GetStringMessageFromC(string className, string selector, object[] arguments) {
-        Debug.Log("Unity: ATUnityCBridge::GetStringMessageFromC()");
         Dictionary<string, object> msgDict = new Dictionary<string, object>();
         msgDict.Add("class", className);
         msgDict.Add("selector", selector);
@@ -71,7 +69,6 @@ public class ATUnityCBridge {
     }
 
     static public bool SendMessageToC(string className, string selector, object[] arguments, bool carryCallback) {
-        Debug.Log("Unity: ATUnityCBridge::SendMessageToC()");
         Dictionary<string, object> msgDict = new Dictionary<string, object>();
     	msgDict.Add("class", className);
     	msgDict.Add("selector", selector);
@@ -91,7 +88,6 @@ public class ATUnityCBridge {
 #endif
     static public void SendMessageToCWithCallBack(string className, string selector, object[] arguments, Func<string, int> callback)
     {
-        Debug.Log("Unity: ATUnityCBridge::SendMessageToCWithCallBack()");
         Dictionary<string, object> msgDict = new Dictionary<string, object>();
         msgDict.Add("class", className);
         msgDict.Add("selector", selector);

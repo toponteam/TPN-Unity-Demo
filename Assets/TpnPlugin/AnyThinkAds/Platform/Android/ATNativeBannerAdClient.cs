@@ -24,6 +24,7 @@ namespace AnyThinkAds.Android
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs> onAdSourceBiddingFailureEvent;
+        public event EventHandler<ATAdEventArgs> onAdMultipleLoadedEvent;
         public ATNativeBannerAdClient() {
 
         }

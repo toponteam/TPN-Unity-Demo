@@ -97,6 +97,9 @@ namespace AnyThinkAds.Api
 
         // triggers when a the ad has started to load
         event EventHandler<ATAdErrorEventArgs> onAdSourceBiddingFailureEvent;
+
+        /// <summary>One request, multiple ads loaded. <see cref="ATAdEventArgs.callbackInfo"/> is JSON of native <c>ATRequestingInfo</c> (with <c>biddingAttemptAdInfoList</c> / <c>loadingAdInfoList</c>).</summary>
+        event EventHandler<ATAdEventArgs> onAdMultipleLoadedEvent;
     }
 
 

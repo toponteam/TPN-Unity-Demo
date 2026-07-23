@@ -26,8 +26,10 @@ namespace AnyThinkAds.Android
         public event EventHandler<ATAdEventArgs>        onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs>        onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs>   onAdSourceBiddingFailureEvent;
+        public event EventHandler<ATAdEventArgs>        onAdMultipleLoadedEvent;
 
         private Dictionary<string, AndroidJavaObject> splashHelperMap = new Dictionary<string, AndroidJavaObject>();
+        private Dictionary<string, IATAdRevenueListener> mAdRevenueByPlacement = new Dictionary<string, IATAdRevenueListener>();
         private ATSplashAdListener splashAdListener;
 
         private int fetchAdTimeout = 0;
@@ -61,19 +63,20 @@ namespace AnyThinkAds.Android
         }
 
         public void loadSplashAd(string placementId, int fetchAdTimeout = 0, string defaultAdSourceConfig = "", string mapJson = "")
-        {
-            this.fetchAdTimeout = fetchAdTimeout;
-            this.defaultAdSourceConfig = defaultAdSourceConfig;
-            try
-            {
-                ATLogger.Log("loadSplashAd() >>> placementId: {0}", placementId);
-                getSplashHelper(placementId).Call("loadAd", mapJson);
-            }
-            catch (System.Exception e)
-            {
-                ATLogger.LogError("loadSplashAd() >>>  error: {0}", e.Message);
-            }
-        }
+ {
+     this.fetchAdTimeout = fetchAdTimeout;
+     this.defaultAdSourceConfig = defaultAdSourceConfig;
+     try
+     {
+         ATLogger.Log("loadSplashAd() >>> placementId: {0}", placementId);
+         splashHelperMap.Remove(placementId);
+         getSplashHelper(placementId).Call("loadAd", mapJson);
+     }
+     catch (System.Exception e)
+     {
+         ATLogger.LogError("loadSplashAd() >>>  error: {0}", e.Message);
+     }
+ }
 
         public void setListener(ATSplashAdListener listener)
         {
@@ -121,7 +124,7 @@ namespace AnyThinkAds.Android
             {
                 ATLogger.LogError("showSplashAd() >>> error: {0}", e.Message);
             }
-        }
+        } 
 
 		public string getValidAdCaches(string placementId)
         {
@@ -140,15 +143,43 @@ namespace AnyThinkAds.Android
 
         public void entryScenarioWithPlacementID(string placementId, string scenarioID)
         {
+            entryScenarioWithPlacementID(placementId, scenarioID, null);
+        }
+
+        public void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson)
+        {
             ATLogger.Log("entryScenarioWithPlacementID() >>> placementId: {0}, scenarioID: {1}", placementId, scenarioID);
 
             try
             {
-               getSplashHelper(placementId).Call<string>("entryAdScenario", scenarioID);
+                if (string.IsNullOrEmpty(tkExtraJson))
+                {
+                    getSplashHelper(placementId).Call("entryAdScenario", scenarioID);
+                }
+                else
+                {
+                    getSplashHelper(placementId).Call("entryAdScenario", scenarioID, tkExtraJson);
+                }
             }
             catch(Exception e)
             {
                 ATLogger.LogError("entryScenarioWithPlacementID() >>> error: {0}", e.Message);
+            }
+        }
+
+        public void setAdRevenueListener(string placementId, IATAdRevenueListener listener)
+        {
+            mAdRevenueByPlacement[placementId] = listener;
+            try
+            {
+                if (getSplashHelper(placementId) != null)
+                {
+                    getSplashHelper(placementId).Call("setAdRevenueListener");
+                }
+            }
+            catch (Exception e)
+            {
+                ATLogger.LogError("setAdRevenueListener() >>> error: {0}", e.Message);
             }
         }
 
@@ -232,6 +263,27 @@ namespace AnyThinkAds.Android
             ATLogger.Log("onAdSourceLoadFail...unity3d." + placementId + "," + code + "," + error + "," + callbackJson);
 
             onAdSourceLoadFailureEvent?.Invoke(this, new ATAdErrorEventArgs(placementId, callbackJson, code, error));
+        }
+
+        public void onAdMultipleLoaded(string placementId, string requestingInfoJson)
+        {
+            onAdMultipleLoadedEvent?.Invoke(this, new ATAdEventArgs(placementId, requestingInfoJson ?? ""));
+        }
+
+        public void onAdRevenuePaid(string placementId, string atAdInfoJson)
+        {
+            IATAdRevenueListener rev;
+            if (mAdRevenueByPlacement != null && mAdRevenueByPlacement.TryGetValue(placementId, out rev) && rev != null)
+            {
+                try
+                {
+                    rev.onAdRevenuePaid(placementId, new ATCallbackInfo(atAdInfoJson));
+                }
+                catch (Exception e)
+                {
+                    ATLogger.LogError("onAdRevenuePaid: {0}", e.Message);
+                }
+            }
         }
     }
 }

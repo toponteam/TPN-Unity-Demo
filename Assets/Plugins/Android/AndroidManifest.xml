@@ -16,9 +16,12 @@
             <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
         </activity>
          <meta-data
-            android:name="hw_ads_sdk_type"
-            android:value="6"
-            tools:node="replace"
-            tools:replace="android:value" />
+             android:name="com.google.android.gms.ads.APPLICATION_ID"
+             android:value="ca-app-pub-9488501426181082~6354662111"/>
+         <meta-data
+             android:name="hw_ads_sdk_type"
+             android:value="6"
+             tools:node="replace"
+             tools:replace="android:value" />
     </application>
 </manifest>

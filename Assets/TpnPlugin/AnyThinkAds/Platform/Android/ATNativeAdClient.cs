@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,8 +23,10 @@ namespace AnyThinkAds.Android
         public event EventHandler<ATAdEventArgs>            onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs>            onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs>       onAdSourceBiddingFailureEvent;
+        public event EventHandler<ATAdEventArgs>            onAdMultipleLoadedEvent;
 
         private Dictionary<string, AndroidJavaObject> nativeAdHelperMap = new Dictionary<string, AndroidJavaObject>();
+        private Dictionary<string, IATAdRevenueListener> mAdRevenueByPlacement = new Dictionary<string, IATAdRevenueListener>();
         private ATNativeAdListener mlistener;
 
         public ATNativeAdClient(): base("com.secmtp.sdk.unitybridge.nativead.NativeListener")
@@ -40,6 +42,7 @@ namespace AnyThinkAds.Android
                     "com.secmtp.sdk.unitybridge.nativead.NativeHelper", this);
                 nativeHelper.Call("initNative", placementId);
                 nativeAdHelperMap.Add(placementId, nativeHelper);
+                ApplyAdRevenueListenerIfNeeded(placementId);
             }
 			try{
                 if (nativeAdHelperMap.ContainsKey(placementId)) {
@@ -68,12 +71,23 @@ namespace AnyThinkAds.Android
         }
         
         public void entryScenarioWithPlacementID(string placementId, string scenarioID){
+            entryScenarioWithPlacementID(placementId, scenarioID, null);
+        }
+
+        public void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson){
             Debug.Log("ATNativeAdClient : entryScenarioWithPlacementID....");
             try
             {
                 if (nativeAdHelperMap.ContainsKey(placementId))
                 {
-                    nativeAdHelperMap[placementId].Call("entryAdScenario", scenarioID);
+                    if (string.IsNullOrEmpty(tkExtraJson))
+                    {
+                        nativeAdHelperMap[placementId].Call("entryAdScenario", scenarioID);
+                    }
+                    else
+                    {
+                        nativeAdHelperMap[placementId].Call("entryAdScenario", scenarioID, tkExtraJson);
+                    }
                 }
             }
             catch (System.Exception e)
@@ -81,8 +95,40 @@ namespace AnyThinkAds.Android
                 System.Console.WriteLine("Exception caught: {0}", e);
                 Debug.Log("ATNativeAdClient entryScenarioWithPlacementID:  error." + e.Message);
             }
+        }
 
+        public void setAdRevenueListener(string placementId, IATAdRevenueListener listener)
+        {
+            if (listener == null)
+            {
+                mAdRevenueByPlacement.Remove(placementId);
+            }
+            else
+            {
+                mAdRevenueByPlacement[placementId] = listener;
+            }
+            ApplyAdRevenueListenerIfNeeded(placementId);
+        }
 
+        private void ApplyAdRevenueListenerIfNeeded(string placementId)
+        {
+            if (string.IsNullOrEmpty(placementId) || nativeAdHelperMap == null || !nativeAdHelperMap.ContainsKey(placementId))
+            {
+                return;
+            }
+            if (mAdRevenueByPlacement == null || !mAdRevenueByPlacement.ContainsKey(placementId))
+            {
+                return;
+            }
+            try
+            {
+                nativeAdHelperMap[placementId].Call("setAdRevenueListener");
+            }
+            catch (System.Exception e)
+            {
+                System.Console.WriteLine("Exception caught: {0}", e);
+                Debug.Log("ATNativeAdClient ApplyAdRevenueListenerIfNeeded:  error." + e.Message);
+            }
         }
 
         public string checkAdStatus(string placementId)
@@ -133,8 +179,7 @@ namespace AnyThinkAds.Android
 		public void renderAdToScene(string placementId, ATNativeAdView anyThinkNativeAdView, string mapJson)
         {	
 			string showconfig = anyThinkNativeAdView.toJSON ();
-            //暂未实现 show
-			Debug.Log ("renderAdToScene....showconfig >>>:"+showconfig);
+            Debug.Log("ATNativeAdClient::renderAdToScene(placementId=" + placementId + ", mapJson length=" + (mapJson != null ? mapJson.Length : 0) + ")");
 			try{
                 if (nativeAdHelperMap.ContainsKey(placementId)) {
                     nativeAdHelperMap[placementId].Call ("show",showconfig, mapJson);
@@ -143,7 +188,7 @@ namespace AnyThinkAds.Android
 				Debug.Log ("ATNativeAdClient :  error."+e.Message);
 				System.Console.WriteLine("Exception caught: {0}", e);
 			}
-        }
+        } 
 
         public void cleanAdView(string placementId, ATNativeAdView anyThinkNativeAdView)
         {
@@ -337,6 +382,26 @@ namespace AnyThinkAds.Android
             onAdSourceLoadFailureEvent?.Invoke(this, new ATAdErrorEventArgs(placementId,callbackJson,code,error));
         }
 
+        public void onAdMultipleLoaded(string placementId, string requestingInfoJson)
+        {
+            onAdMultipleLoadedEvent?.Invoke(this, new ATAdEventArgs(placementId, requestingInfoJson ?? ""));
+        }
+
+        public void onAdRevenuePaid(string placementId, string atAdInfoJson)
+        {
+            IATAdRevenueListener rev;
+            if (mAdRevenueByPlacement != null && mAdRevenueByPlacement.TryGetValue(placementId, out rev) && rev != null)
+            {
+                try
+                {
+                    rev.onAdRevenuePaid(placementId, new ATCallbackInfo(atAdInfoJson));
+                }
+                catch (System.Exception e)
+                {
+                    Debug.Log("onAdRevenuePaid: " + e.Message);
+                }
+            }
+        }
 
     }
 }

@@ -7,59 +7,48 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
 {
     public class ATDownloadHandler : DownloadHandlerScript
     {
-        // Required by DownloadHandler base class. Called when you address the 'bytes' property.
-        protected override byte[] GetData()
-        {
-            return null;
-        }
+        private FileStream outputStream;
 
-        private FileStream fileStream;
-
-        public ATDownloadHandler(string path) : base(new byte[2048])
+        public ATDownloadHandler(string destPath) : base(new byte[4096])
         {
-            var downloadDirectory = Path.GetDirectoryName(path);
-            if (!Directory.Exists(downloadDirectory))
+            var dir = Path.GetDirectoryName(destPath);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
             {
-                Directory.CreateDirectory(downloadDirectory);
+                Directory.CreateDirectory(dir);
             }
 
             try
             {
-                //Open the current file to write to
-                fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                outputStream = new FileStream(destPath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                // MaxSdkLogger.UserError(string.Format("Failed to create file at {0}\n{1}", path, exception.Message));
-                ATLog.logError(string.Format("Failed to create file at {0}\n{1}", path, exception.Message));
+                ATLog.logError(string.Format("Cannot open file {0}: {1}", destPath, ex.Message));
             }
         }
 
-        protected override bool ReceiveData(byte[] byteFromServer, int dataLength)
+        protected override byte[] GetData() { return null; }
+
+        protected override bool ReceiveData(byte[] data, int length)
         {
-            if (byteFromServer == null || byteFromServer.Length < 1 || fileStream == null)
-            {
-                return false;
-            }
+            if (data == null || data.Length == 0 || outputStream == null) return false;
 
             try
             {
-                //Write the current data to the file
-                fileStream.Write(byteFromServer, 0, dataLength);
+                outputStream.Write(data, 0, length);
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                fileStream.Close();
-                fileStream = null;
-                ATLog.logError(string.Format("Failed to download file{0}", exception.Message));
+                outputStream.Close();
+                outputStream = null;
+                ATLog.logError("Download write error: " + ex.Message);
             }
-
             return true;
         }
 
         protected override void CompleteContent()
         {
-            fileStream.Close();
+            if (outputStream != null) outputStream.Close();
         }
     }
 }

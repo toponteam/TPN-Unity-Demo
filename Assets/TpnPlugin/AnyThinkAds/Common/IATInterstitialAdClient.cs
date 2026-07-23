@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using AnyThinkAds.Api;
@@ -34,8 +34,7 @@ namespace AnyThinkAds.Common
         /***
 		 * 显示广告
 		 */
-        void showInterstitialAd(string placementId, string mapJson);
-
+        void showInterstitialAd(string placementId, string mapJson); 
 
 		/***
 		 * 获取所有可用缓存广告
@@ -43,7 +42,8 @@ namespace AnyThinkAds.Common
 		string getValidAdCaches(string placementId);
 
         void entryScenarioWithPlacementID(string placementId, string scenarioID);
-		
+        void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson);
+        void setAdRevenueListener(string placementId, IATAdRevenueListener listener);
 
         string checkAutoAdStatus(string placementId);
 
@@ -58,6 +58,8 @@ namespace AnyThinkAds.Common
         void setAutoLocalExtra(string placementId, string mapJson);
 
         void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID);
+        void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson);
+        void setAutoAdRevenueListener(IATAdRevenueListener listener);
 
 		void showAutoAd(string placementId, string mapJson);
 	}

@@ -45,7 +45,7 @@ namespace AnyThinkAds.Api
             #endif
         }
 
-        public void showSplashAd(string placementId, Dictionary<string, object> pairs)
+        public void showSplashAd(string placementId, Dictionary<string, string> pairs)
         {
             client.showSplashAd(placementId, JsonMapper.ToJson(pairs));
         }
@@ -68,6 +68,17 @@ namespace AnyThinkAds.Api
         public void entryScenarioWithPlacementID(string placementId, string scenarioID)
         {
             client.entryScenarioWithPlacementID(placementId, scenarioID);
+        }
+
+        public void entryScenarioWithPlacementID(string placementId, string scenarioID, Dictionary<string, object> tkExtra)
+        {
+            string j = (tkExtra != null) ? JsonMapper.ToJson(tkExtra) : null;
+            client.entryScenarioWithPlacementID(placementId, scenarioID, j);
+        }
+
+        public void setAdRevenueListener(string placementId, IATAdRevenueListener listener)
+        {
+            client.setAdRevenueListener(placementId, listener);
         }
     }
 }

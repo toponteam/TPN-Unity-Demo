@@ -1,6 +1,6 @@
 <dependencies>
     <androidPackages>
-        <!-- 排除 Maven 依赖的 unity-ads，使用 Unity 包自带的本地 UnityAds.aar -->
-        <!-- <androidPackage spec="com.unity3d.ads:unity-ads:4.16.1"/> -->
+        <androidPackage spec="com.anythink.sdk:adapter-tpn-unityads:4.18.0.1.0"/>
+        <androidPackage spec="com.unity3d.ads:unity-ads:4.18.0"/>
     </androidPackages>
 </dependencies>

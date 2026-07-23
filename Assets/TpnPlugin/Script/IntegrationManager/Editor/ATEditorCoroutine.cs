@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -6,67 +7,72 @@ namespace AnyThink.Scripts.IntegrationManager.Editor
 {
     public class ATEditorCoroutine
     {
-        /// <summary>
-        /// Keeps track of the coroutine currently running.
-        /// </summary>
-        private IEnumerator enumerator;
+        private readonly Stack<IEnumerator> coroutineStack = new Stack<IEnumerator>();
+        private bool isRunning;
 
-        /// <summary>
-        /// Keeps track of coroutines that have yielded to the current enumerator.
-        /// </summary>
-        private readonly List<IEnumerator> history = new List<IEnumerator>();
-
-        private ATEditorCoroutine(IEnumerator enumerator) {
-            this.enumerator = enumerator;
-        }
-
-
-        public static ATEditorCoroutine startCoroutine(IEnumerator enumerator) {
-            var coroutine = new ATEditorCoroutine(enumerator);
-            coroutine.Start();
-            return coroutine;
-        }
-
-        private void Start()
+        private ATEditorCoroutine(IEnumerator routine)
         {
-            EditorApplication.update += OnEditorUpdate;
+            coroutineStack.Push(routine);
         }
 
-        /// <summary>
-        /// Stops the coroutine.
-        /// </summary>
+        public static ATEditorCoroutine startCoroutine(IEnumerator routine)
+        {
+            if (routine == null) throw new ArgumentNullException("routine");
+
+            var instance = new ATEditorCoroutine(routine);
+            instance.Activate();
+            return instance;
+        }
+
+        private void Activate()
+        {
+            if (isRunning) return;
+            isRunning = true;
+            EditorApplication.update += Tick;
+        }
+
         public void Stop()
         {
-            if (EditorApplication.update == null) return;
-
-            EditorApplication.update -= OnEditorUpdate;
+            if (!isRunning) return;
+            isRunning = false;
+            EditorApplication.update -= Tick;
+            coroutineStack.Clear();
         }
 
-        private void OnEditorUpdate()
+        private void Tick()
         {
-            if (enumerator.MoveNext())
+            if (coroutineStack.Count == 0)
             {
-                // If there is a coroutine to yield for inside the coroutine, add the initial one to history and continue the second one
-                if (enumerator.Current is IEnumerator)
+                Stop();
+                return;
+            }
+
+            var current = coroutineStack.Peek();
+            bool advanced;
+            try
+            {
+                advanced = current.MoveNext();
+            }
+            catch (Exception)
+            {
+                Stop();
+                throw;
+            }
+
+            if (advanced)
+            {
+                var nested = current.Current as IEnumerator;
+                if (nested != null)
                 {
-                    history.Add(enumerator);
-                    enumerator = (IEnumerator) enumerator.Current;
+                    coroutineStack.Push(nested);
                 }
             }
             else
             {
-                // Current coroutine has ended, check if we have more coroutines in history to be run.
-                if (history.Count == 0)
+                coroutineStack.Pop();
+                if (coroutineStack.Count == 0)
                 {
-                    // No more coroutines to run, stop updating.
                     Stop();
-                }
-                // Step out and finish the code in the coroutine that yielded to it
-                else
-                {
-                    var index = history.Count - 1;
-                    enumerator = history[index];
-                    history.RemoveAt(index);
                 }
             }
         }

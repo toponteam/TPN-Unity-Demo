@@ -7,6 +7,10 @@ using UnityEngine.SceneManagement;
 using AnyThinkAds.Api;
 using AnyThinkAds.ThirdParty.LitJson;
 
+#if UNITY_IOS
+using Unity.Advertisement.IosSupport;
+#endif
+
 public class HomeScreenScene : MonoBehaviour, ATSDKInitListener
 {
 #if UNITY_ANDROID    
@@ -45,7 +49,7 @@ public class HomeScreenScene : MonoBehaviour, ATSDKInitListener
         mediationDebuggerButton.onClick.AddListener(OpenDebuggerUITool);
         automicRewardInterButton.onClick.AddListener(JumpToAutomicPage);
 
-        InitializeSDK();
+        StartCoroutine(RequestATTThenInit());
     }
 
     void OnDestroy()
@@ -65,6 +69,40 @@ public class HomeScreenScene : MonoBehaviour, ATSDKInitListener
     private void JumpToAutomicPage()
     {
         SceneManager.LoadScene("AutomicRewardInterScene");
+    }
+
+    /// <summary>
+    /// iOS：等 App 进入前台后再请求 ATT，用户选择完成后再初始化 SDK。
+    /// Android / 其他平台：直接初始化，无额外等待。
+    /// </summary>
+    private IEnumerator RequestATTThenInit()
+    {
+        #if UNITY_IOS
+        while (!Application.isFocused)
+        {
+            yield return null;
+        }
+
+        yield return new WaitForSecondsRealtime(0.5f);
+
+        var status = ATTrackingStatusBinding.GetAuthorizationTrackingStatus();
+        Debug.Log("ATT current status: " + status);
+
+        if (status == ATTrackingStatusBinding.AuthorizationTrackingStatus.NOT_DETERMINED)
+        {
+            ATTrackingStatusBinding.RequestAuthorizationTracking();
+
+            while (ATTrackingStatusBinding.GetAuthorizationTrackingStatus()
+                   == ATTrackingStatusBinding.AuthorizationTrackingStatus.NOT_DETERMINED)
+            {
+                yield return null;
+            }
+        }
+
+        Debug.Log("ATT final status: " + ATTrackingStatusBinding.GetAuthorizationTrackingStatus());
+        #endif
+        InitializeSDK();
+        yield break;
     }
 
     private void InitializeSDK() 
@@ -108,8 +146,6 @@ public class HomeScreenScene : MonoBehaviour, ATSDKInitListener
         InitializeNativeAds();
         InitializeSplashAds();
 
-        //Splash ads display directly
-        ShowSplashAd();
     }
     //This method will be called back after the SDK is initialized failed
     public void initFail(string msg)

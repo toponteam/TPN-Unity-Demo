@@ -41,12 +41,17 @@ namespace AnyThinkAds.Android
 
         public void getUserLocation(ATGetUserLocationListener listener)
         {
+            checkIsEuTraffic(listener, null);
+        }
+
+        public void checkIsEuTraffic(ATGetUserLocationListener listener, string appId)
+        {
             ATNetTrafficListener netTrafficListener = new ATNetTrafficListener(listener);
             try
             {
                 if (this.sdkInitHelper != null)
                 {
-                    this.sdkInitHelper.Call("checkIsEuTraffic", netTrafficListener);
+                    this.sdkInitHelper.Call("checkIsEuTraffic", netTrafficListener, appId);
                 }
             }
             catch (System.Exception e)
@@ -54,7 +59,6 @@ namespace AnyThinkAds.Android
                 System.Console.WriteLine("Exception caught: {0}", e);
                 Debug.Log("ATSDKAPIClient :  error." + e.Message);
             }
-            //implement getting location here
         }
 
         public void setGDPRLevel(int level)
@@ -87,17 +91,165 @@ namespace AnyThinkAds.Android
 
          public void showGDPRConsentDialog(ATConsentDismissListener listener)
         {
+            showGDPRConsentDialog(listener, null);
+        }
+
+        public void showGDPRConsentDialog(ATConsentDismissListener listener, string appId)
+        {
 			Debug.Log ("showGDPRConsentDialog....");
 			ATGDPRConsentDismissListener gdprConsentDismissListener = new ATGDPRConsentDismissListener(listener);
 			try{
 				if (this.sdkInitHelper != null) {
-					this.sdkInitHelper.Call ("showGDPRConsentDialog", gdprConsentDismissListener);
+					this.sdkInitHelper.Call ("showGDPRConsentDialog", gdprConsentDismissListener, appId);
 				}
 			}catch(System.Exception e){
 				System.Console.WriteLine("Exception caught: {0}", e);
 				Debug.Log ("ATSDKAPIClient :  error."+e.Message);
 
 			}
+        }
+
+        public void showGDPRConsentSecondDialog(ATConsentDismissListener listener, string appId)
+        {
+			Debug.Log ("showGDPRConsentSecondDialog....");
+			ATGDPRConsentDismissListener gdprConsentDismissListener = new ATGDPRConsentDismissListener(listener);
+			try{
+				if (this.sdkInitHelper != null) {
+					this.sdkInitHelper.Call ("showGDPRConsentSecondDialog", gdprConsentDismissListener, appId);
+				}
+			}catch(System.Exception e){
+				System.Console.WriteLine("Exception caught: {0}", e);
+				Debug.Log ("ATSDKAPIClient :  error."+e.Message);
+			}
+        }
+
+        public void start()
+        {
+            try
+            {
+                if (this.sdkInitHelper != null)
+                {
+                    this.sdkInitHelper.Call("start");
+                }
+            }
+            catch (System.Exception e)
+            {
+                System.Console.WriteLine("Exception caught: {0}", e);
+                Debug.Log("ATSDKAPIClient :  error." + e.Message);
+            }
+        }
+
+        public void setLocalStrategyAssetPath(string assetPath)
+        {
+            try
+            {
+                if (this.sdkInitHelper != null)
+                {
+                    this.sdkInitHelper.Call("setLocalStrategyAssetPath", assetPath);
+                }
+            }
+            catch (System.Exception e)
+            {
+                System.Console.WriteLine("Exception caught: {0}", e);
+                Debug.Log("ATSDKAPIClient :  error." + e.Message);
+            }
+        }
+
+        public string getSDKVersion()
+        {
+            try
+            {
+                if (this.sdkInitHelper != null)
+                {
+                    return this.sdkInitHelper.Call<string>("getSDKVersionName");
+                }
+            }
+            catch (System.Exception e)
+            {
+                System.Console.WriteLine("Exception caught: {0}", e);
+                Debug.Log("ATSDKAPIClient :  error." + e.Message);
+            }
+            return "";
+        }
+
+        public void setSharedPlacementConfig(string configJson)
+        {
+            try
+            {
+                if (this.sdkInitHelper != null)
+                {
+                    this.sdkInitHelper.Call("setSharedPlacementConfig", configJson);
+                }
+            }
+            catch (System.Exception e)
+            {
+                System.Console.WriteLine("Exception caught: {0}", e);
+                Debug.Log("ATSDKAPIClient setSharedPlacementConfig:  error." + e.Message);
+            }
+        }
+
+        public void setAdSourcePrivacyPolicy(string policyJson)
+        {
+            try
+            {
+                if (this.sdkInitHelper != null)
+                {
+                    this.sdkInitHelper.Call("setAdSourcePrivacyPolicy", policyJson);
+                }
+            }
+            catch (System.Exception e)
+            {
+                System.Console.WriteLine("Exception caught: {0}", e);
+                Debug.Log("ATSDKAPIClient setAdSourcePrivacyPolicy:  error." + e.Message);
+            }
+        }
+
+        public void putFilter(string placementId, string filterJson)
+        {
+            try
+            {
+                if (this.sdkInitHelper != null)
+                {
+                    this.sdkInitHelper.Call("putFilter", placementId, filterJson);
+                }
+            }
+            catch (System.Exception e)
+            {
+                System.Console.WriteLine("Exception caught: {0}", e);
+                Debug.Log("ATSDKAPIClient putFilter:  error." + e.Message);
+            }
+        }
+
+        public void removeFilterWithPlacementId(string placementId)
+        {
+            try
+            {
+                if (this.sdkInitHelper != null)
+                {
+                    this.sdkInitHelper.Call("removeFilterWithPlacementId", placementId);
+                }
+            }
+            catch (System.Exception e)
+            {
+                System.Console.WriteLine("Exception caught: {0}", e);
+                Debug.Log("ATSDKAPIClient removeFilterWithPlacementId:  error." + e.Message);
+            }
+        }
+
+        public void removeFilters()
+        {
+            try
+            {
+                if (this.sdkInitHelper != null)
+                {
+                    this.sdkInitHelper.Call("removeFilters");
+                }
+            }
+            catch (System.Exception e)
+            {
+                System.Console.WriteLine("Exception caught: {0}", e);
+                Debug.Log("ATSDKAPIClient removeFilters:  error." + e.Message);
+            }
         }
 
         public void setChannel(string channel)

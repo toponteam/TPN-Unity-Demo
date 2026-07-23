@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+        <dependencies>
+            <iosPods>
+                <iosPod name="TPNiOS" version="6.5.47" />
+                <iosPod name="TPNMediationAdxSmartdigimktAdapter" version="6.5.66.0" />
+            </iosPods>
+        </dependencies>

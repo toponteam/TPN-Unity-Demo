@@ -25,6 +25,7 @@ namespace AnyThinkAds.iOS
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs> onAdSourceBiddingFailureEvent;
+        public event EventHandler<ATAdEventArgs> onAdMultipleLoadedEvent;
     	private ATNativeBannerAdListener listener;
     	public void loadAd(string placementId, string mapJson) {
     		Debug.Log("ATNativeBannerAdClient::loadAd()");
@@ -33,6 +34,11 @@ namespace AnyThinkAds.iOS
     		ATNativeBannerAdWrapper.loadAd(placementId, mapJson);
     		Debug.Log("ATNativeBannerAdClient::loadAd(), after invoke load ad");
     	}
+
+        public void onAdMultipleLoaded(string placementId, string requestingInfoJson)
+        {
+            onAdMultipleLoadedEvent?.Invoke(this, new ATAdEventArgs(placementId, requestingInfoJson ?? ""));
+        }
     	
 		public bool adReady(string placementId) {
 			Debug.Log("ATNativeBannerAdClient::adReady()");

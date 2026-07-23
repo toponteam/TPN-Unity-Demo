@@ -14,11 +14,11 @@ namespace AnyThinkAds.Common
         bool hasSplashAdReady(string placementId);
 
         string checkAdStatus(string placementId);
-
-        void showSplashAd(string placementId, string mapJson);
-
+        void showSplashAd(string placementId, string mapJson); 
 		string getValidAdCaches(string placementId);
 
         void entryScenarioWithPlacementID(string placementId, string scenarioID);
+        void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson);
+        void setAdRevenueListener(string placementId, IATAdRevenueListener listener);
     }
 }

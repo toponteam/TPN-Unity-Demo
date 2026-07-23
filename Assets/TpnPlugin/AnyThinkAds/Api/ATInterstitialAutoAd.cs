@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
@@ -76,6 +76,17 @@ namespace AnyThinkAds.Api
         public void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID)
         {
             client.entryAutoAdScenarioWithPlacementID(placementId, scenarioID);
+        }
+
+        public void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID, Dictionary<string, object> tkExtra)
+        {
+            string j = (tkExtra != null) ? JsonMapper.ToJson(tkExtra) : null;
+            client.entryAutoAdScenarioWithPlacementID(placementId, scenarioID, j);
+        }
+
+        public void setAutoAdRevenueListener(IATAdRevenueListener listener)
+        {
+            client.setAutoAdRevenueListener(listener);
         }
 
         public void showAutoAd(string placementId)

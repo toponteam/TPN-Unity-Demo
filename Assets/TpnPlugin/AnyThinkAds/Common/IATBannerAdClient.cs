@@ -1,4 +1,5 @@
-﻿using System.Collections;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using AnyThinkAds.Api;
@@ -62,6 +63,7 @@ namespace AnyThinkAds.Common
 		 * @param placementId 
 		 */
         void showBannerAd(string placementId);
+
 		/***
 		 * 清理缓存
 		 */ 
@@ -71,5 +73,10 @@ namespace AnyThinkAds.Common
 		 * 获取所有可用缓存广告
 		 */
 		string getValidAdCaches(string placementId);
+		/// <summary>Mirrors native <c>ATBannerView.entryAdScenario(placementId, scenarioId, tkExtraMap)</c>; <paramref name="tkExtraJson"/> is the JSON form of the native Map (nullable).</summary>
+		void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson);
+		/// <summary>Register the per-placement ad-revenue listener; mirrors native <c>setAdRevenueListener</c>.</summary>
+		void setAdRevenueListener(string placementId, IATAdRevenueListener listener);
+ 
     }
 }

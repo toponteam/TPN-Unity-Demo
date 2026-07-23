@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -41,7 +41,7 @@ namespace AnyThinkAds.Common
          * @parm mapJson
 		 */
         void renderAdToScene(string placementId, ATNativeAdView anyThinkNativeAdView, string mapJson);
-
+  
 		/***
 		 * 
 		 * 清理广告
@@ -68,6 +68,8 @@ namespace AnyThinkAds.Common
 		string getValidAdCaches(string placementId);
 
 		void entryScenarioWithPlacementID(string placementId, string scenarioID);
+		void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson);
+		void setAdRevenueListener(string placementId, IATAdRevenueListener listener);
 
 	}
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -24,12 +24,18 @@ namespace AnyThinkAds.iOS {
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs> onAdSourceBiddingFailureEvent;
+        public event EventHandler<ATAdEventArgs> onAdMultipleLoadedEvent;
 
 		private ATNativeAdListener mlistener;
 		public void loadNativeAd(string placementId, string mapJson) {
             Debug.Log("Unity:ATNativeAdClient::loadNativeAd()");
             ATNativeAdWrapper.setClientForPlacementID(placementId, this);
             ATNativeAdWrapper.loadNativeAd(placementId, mapJson);
+        }
+
+        public void onAdMultipleLoaded(string placementId, string requestingInfoJson)
+        {
+            onAdMultipleLoadedEvent?.Invoke(this, new ATAdEventArgs(placementId, requestingInfoJson ?? ""));
         }
 
 		public void setLocalExtra (string placementId,string localExtra){
@@ -47,9 +53,17 @@ namespace AnyThinkAds.iOS {
         }
 
         public void entryScenarioWithPlacementID(string placementId, string scenarioID){
+			entryScenarioWithPlacementID(placementId, scenarioID, null);
+		}
 
-            Debug.Log("Unity: ATNativeAdClient::entryScenarioWithPlacementID()");
-			ATNativeAdWrapper.entryScenarioWithPlacementID(placementId,scenarioID);
+        public void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson){
+            Debug.Log("Unity: ATNativeAdClient::entryScenarioWithPlacementID(placementId=" + placementId + ", scenarioID=" + scenarioID + ", tkExtraJson length=" + (tkExtraJson != null ? tkExtraJson.Length : 0) + ")");
+			ATNativeAdWrapper.entryScenarioWithPlacementID(placementId,scenarioID,tkExtraJson);
+		}
+
+		public void setAdRevenueListener(string placementId, IATAdRevenueListener listener) {
+			Debug.Log("Unity: ATNativeAdClient::setAdRevenueListener(placementId=" + placementId + ", listener=" + (listener != null ? "set" : "null") + ")");
+			ATNativeAdWrapper.setAdRevenueListener(placementId, listener);
 		}
 
 
@@ -70,10 +84,10 @@ namespace AnyThinkAds.iOS {
         }
 
         public void renderAdToScene(string placementId, ATNativeAdView anyThinkNativeAdView, string mapJson) {  
-            Debug.Log("Unity:ATNativeAdClient::renderAdToScene()");
+            Debug.Log("Unity: ATNativeAdClient::renderAdToScene(placementId=" + placementId + ", mapJson length=" + (mapJson != null ? mapJson.Length : 0) + ")");
             ATNativeAdWrapper.showNativeAd(placementId, anyThinkNativeAdView.toJSON(), mapJson);
         }
-
+       
         public void cleanAdView(string placementId, ATNativeAdView anyThinkNativeAdView) {
 			Debug.Log("Unity:ATNativeAdClient::cleanAdView()");
             ATNativeAdWrapper.removeNativeAdView(placementId);

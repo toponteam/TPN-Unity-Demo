@@ -29,8 +29,8 @@ public class AutoMaticRewardInterScene : MonoBehaviour
 
     void OnDestroy()
     {
-        AutoInterstitialAdOperator.Instance.destroyAd();
-        AutoInterstitialAdOperator.Instance.destroyAd();
+       AutoInterstitialAdOperator.Instance.destroyAd();
+        AutoRewardVideoAdOperator.Instance.destroyAd();
     }
 
     private void BackToMainPage()
@@ -60,15 +60,17 @@ public class AutoMaticRewardInterScene : MonoBehaviour
         AutoRewardVideoAdOperator.Instance.showAd();
     }
 
-    public void statusChange(object selfer, string status)
-    {
-        Debug.Log("statusChange() >>> selfer: " + selfer + " status: " + status);
-        if (Object.ReferenceEquals(selfer, AutoInterstitialAdOperator.Instance))
-        {
-            interstitialStatusText.text = status;
-        } else if(Object.ReferenceEquals(selfer, AutoRewardVideoAdOperator.Instance)) {
-            rewardStatusText.text = status;
-        }
-    }
+     public void statusChange(object selfer, string status)
+     {
+         Debug.Log("statusChange() >>> selfer: " + selfer + " status: " + status);
+         if (Object.ReferenceEquals(selfer, AutoInterstitialAdOperator.Instance))
+         {
+             if (interstitialStatusText != null)
+                 interstitialStatusText.text = status;
+         } else if(Object.ReferenceEquals(selfer, AutoRewardVideoAdOperator.Instance)) {
+             if (rewardStatusText != null)
+                 rewardStatusText.text = status;
+         }
+     }
     
 }

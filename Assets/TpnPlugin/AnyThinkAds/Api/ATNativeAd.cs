@@ -66,6 +66,17 @@ namespace AnyThinkAds.Api
             client.entryScenarioWithPlacementID(placementId,scenarioID);
         }
 
+        public void entryScenarioWithPlacementID(string placementId, string scenarioID, Dictionary<string, object> tkExtra)
+        {
+            string j = (tkExtra != null) ? JsonMapper.ToJson(tkExtra) : null;
+            client.entryScenarioWithPlacementID(placementId, scenarioID, j);
+        }
+
+        public void setAdRevenueListener(string placementId, IATAdRevenueListener listener)
+        {
+            client.setAdRevenueListener(placementId, listener);
+        }
+
         public void renderAdToScene(string placementId, ATNativeAdView anyThinkNativeAdView){
             client.renderAdToScene(placementId, anyThinkNativeAdView, "");
         }
@@ -73,7 +84,7 @@ namespace AnyThinkAds.Api
         public void renderAdToScene(string placementId, ATNativeAdView anyThinkNativeAdView, Dictionary<string,string> pairs){
             client.renderAdToScene(placementId, anyThinkNativeAdView, JsonMapper.ToJson(pairs));
         }
-
+ 
         public void cleanAdView(string placementId, ATNativeAdView anyThinkNativeAdView){
             client.cleanAdView(placementId, anyThinkNativeAdView);
         }

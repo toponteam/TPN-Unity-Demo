@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+        <dependencies>
+            <iosPods>
+                <iosPod name="TPNMediationUnityAdsAdapter" version="4.17.0.0" />
+            </iosPods>
+        </dependencies>

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -41,7 +41,10 @@ namespace AnyThinkAds.Common
 		string getValidAdCaches(string placementId);
 
 		void entryScenarioWithPlacementID(string placementId, string scenarioID);
-
+		/// <summary>Overload of <c>entryAdScenario</c> with <c>tkExtra</c>; <paramref name="tkExtraJson"/> is the JSON form of the native Map (nullable).</summary>
+		void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson);
+		/// <summary>Register the per-placement ad-revenue listener; mirrors native <c>setAdRevenueListener</c>.</summary>
+		void setAdRevenueListener(string placementId, IATAdRevenueListener listener);
 
         string checkAutoAdStatus(string placementId);
 
@@ -56,6 +59,8 @@ namespace AnyThinkAds.Common
         void setAutoLocalExtra(string placementId, string mapJson);
 
         void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID);
+		void entryAutoAdScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson);
+		void setAutoAdRevenueListener(IATAdRevenueListener listener);
 
 		void showAutoAd(string placementId, string mapJson);
 

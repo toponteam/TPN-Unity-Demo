@@ -10,7 +10,7 @@ using AnyThinkAds.ThirdParty.LitJson;
 
 public class AutoRewardVideoAdOperator : BaseAdOperator {
 #if UNITY_ANDROID
-    static string mPlacementId_rewardvideo_all = "b6602833ace122";
+    static string mPlacementId_rewardvideo_all = "b5b449fb3d89d7";
     static string showingScenario = "";
 #elif UNITY_IOS || UNITY_IPHONE
     static string mPlacementId_rewardvideo_all = "b5b44a0f115321";//"b5b44a0f115321";

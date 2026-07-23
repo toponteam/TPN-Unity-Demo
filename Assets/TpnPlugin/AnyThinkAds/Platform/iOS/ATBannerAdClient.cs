@@ -23,14 +23,21 @@ namespace AnyThinkAds.iOS {
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingAttemptEvent;
         public event EventHandler<ATAdEventArgs> onAdSourceBiddingFilledEvent;
         public event EventHandler<ATAdErrorEventArgs> onAdSourceBiddingFailureEvent;
+		public event EventHandler<ATAdEventArgs> onAdMultipleLoadedEvent;
+ 
 
 		private  ATBannerAdListener anyThinkListener;
 		
 
 		public void addsetting(string placementId,string json){
 			//todo...
-		}
+		} 
 
+		public void onAdMultipleLoaded(string placementId, string requestingInfoJson)
+        {
+            onAdMultipleLoadedEvent?.Invoke(this, new ATAdEventArgs(placementId, requestingInfoJson ?? ""));
+        } 
+		
 		public void setListener(ATBannerAdListener listener) {
 			Debug.Log("Unity: ATBannerAdClient::setListener()");
 	        anyThinkListener = listener;
@@ -86,15 +93,28 @@ namespace AnyThinkAds.iOS {
 	    }
 
 	    public void showBannerAd(string placementId) {
-	    	Debug.Log("Unity: ATBannerAdClient::showBannerAd()");	
+	    	Debug.Log("Unity: ATBannerAdClient::showBannerAd()");
 			ATBannerAdWrapper.showBannerAd(placementId);
-	    }
-
-        public void cleanCache(string placementId) {
+	    } 
+		
+		public void cleanCache(string placementId) {
 			Debug.Log("Unity: ATBannerAdClient::cleanCache()");
 			ATBannerAdWrapper.clearCache();
         }
 
+		public void entryScenarioWithPlacementID(string placementId, string scenarioID) {
+			entryScenarioWithPlacementID(placementId, scenarioID, null);
+		}
+
+		public void entryScenarioWithPlacementID(string placementId, string scenarioID, string tkExtraJson) {
+			Debug.Log("Unity: ATBannerAdClient::entryScenarioWithPlacementID(placementId=" + placementId + ", scenarioID=" + scenarioID + ", tkExtraJson length=" + (tkExtraJson != null ? tkExtraJson.Length : 0) + ")");
+			ATBannerAdWrapper.entryScenarioWithPlacementID(placementId, scenarioID, tkExtraJson);
+		}
+
+		public void setAdRevenueListener(string placementId, IATAdRevenueListener listener) {
+			Debug.Log("Unity: ATBannerAdClient::setAdRevenueListener(placementId=" + placementId + ", listener=" + (listener != null ? "set" : "null") + ")");
+			ATBannerAdWrapper.setAdRevenueListener(placementId, listener);
+		}
        
         public void OnBannerAdLoad(string placementId) {
 			Debug.Log("Unity: HBBannerAdWrapper::OnBannerAdLoad()");

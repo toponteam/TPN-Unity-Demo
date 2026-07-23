@@ -11,6 +11,8 @@ public class ATBannerAdWrapper:ATAdWrapper {
 	static private Dictionary<string, ATBannerAdClient> clients;
 	static private string CMessaageReceiverClass = "ATBannerAdWrapper";
 
+	static private readonly Dictionary<string, IATAdRevenueListener> sRevenueByPlacement = new Dictionary<string, IATAdRevenueListener>();
+
 	static public new void InvokeCallback(JsonData jsonData) {
         Debug.Log("Unity: ATBannerAdWrapper::InvokeCallback()");
         string extraJson = "";
@@ -66,6 +68,12 @@ public class ATBannerAdWrapper:ATAdWrapper {
     		if (errorMsg["code"] != null) { errorDict.Add("code", errorMsg["code"]); }
     		if (errorMsg["reason"] != null) { errorDict.Add("message", errorMsg["reason"]); }
     		FailBiddingADSource((string)msgDict["placement_id"],extraJson, errorDict);
+        } else if (callback.Equals("OnAdRevenuePaid")) {
+            string placementId = (string)msgDict["placement_id"];
+            notifyAdRevenuePaidFromCallbackJson(placementId, extraJson);
+        } else if (callback.Equals("OnAdMultipleLoaded")) {
+            OnAdMultipleLoaded((string)msgDict["placement_id"], extraJson ?? "");
+            Debug.Log("Unity: ATBannerAdWrapper::OnAdMultipleLoaded(" + (string)msgDict["placement_id"] + ", " + extraJson + ")");
         }
 
     }
@@ -120,7 +128,7 @@ public class ATBannerAdWrapper:ATAdWrapper {
     	Debug.Log("Unity: ATBannerAdWrapper::showBannerAd(" + placementID + ")");
         Dictionary<string, object> rectDict = new Dictionary<string, object>{ {"x", rect.x},  {"y", rect.y}, {"width", rect.width}, {"height", rect.height}, {"uses_pixel", rect.usesPixel}};
     	ATUnityCBridge.SendMessageToC(CMessaageReceiverClass, "showBannerAdWithPlacementID:rect:extraJsonString:", new object[]{placementID, JsonMapper.ToJson(rectDict), mapJson}, false);
-    }
+    } 
 
     static public void cleanBannerAd(string placementID) {
     	Debug.Log("Unity: ATBannerAdWrapper::cleanBannerAd(" + placementID + ")");
@@ -130,6 +138,12 @@ public class ATBannerAdWrapper:ATAdWrapper {
     static public void clearCache() {
         Debug.Log("Unity: ATBannerAdWrapper::clearCache()");
     	ATUnityCBridge.SendMessageToC(CMessaageReceiverClass, "clearCache", null);
+    }
+
+    static public void entryScenarioWithPlacementID(string placementID, string scenarioID, string tkExtraJson)
+    {
+        Debug.Log("Unity: ATBannerAdWrapper::entryScenarioWithPlacementID(" + placementID + "," + scenarioID + ")");
+        ATUnityCBridge.SendMessageToC(CMessaageReceiverClass, "entryScenarioWithPlacementID:scenarioID:tkExtraJson:", new object[]{placementID, scenarioID, tkExtraJson != null ? tkExtraJson : ""});
     }
 
     static public void setClientForPlacementID(string placementID, ATBannerAdClient client) {
@@ -178,6 +192,13 @@ public class ATBannerAdWrapper:ATAdWrapper {
         if (clients[placementID] != null) clients[placementID].OnBannerAdClose(placementID);
     }
 
+    static private void OnAdMultipleLoaded(string placementID, string requestingInfoJson) {
+        if (clients == null || !clients.ContainsKey(placementID) || clients[placementID] == null) {
+            return;
+        }
+        clients[placementID].onAdMultipleLoaded(placementID, requestingInfoJson ?? "");
+    }
+
     // ad source callback
     static public void StartLoadingADSource(string placementID, string callbackJson)
     {
@@ -216,4 +237,33 @@ public class ATBannerAdWrapper:ATAdWrapper {
         Debug.Log("placementID = " + placementID + "errorDict = " + JsonMapper.ToJson(errorDict));
         if (clients[placementID] != null) clients[placementID].failBiddingADSource(placementID, callbackJson,(string)errorDict["code"], (string)errorDict["message"]);
     }
+
+    static public void setAdRevenueListener(string placementId, IATAdRevenueListener listener) {
+        Debug.Log("Unity: ATBannerAdWrapper::setAdRevenueListener(placementId=" + placementId + ", listener=" + (listener != null ? "set" : "clear") + ")");
+        if (string.IsNullOrEmpty(placementId)) {
+            return;
+        }
+        if (listener == null) {
+            sRevenueByPlacement.Remove(placementId);
+        } else {
+            sRevenueByPlacement[placementId] = listener;
+        }
+    }
+
+    static private void notifyAdRevenuePaidFromCallbackJson(string placementId, string callbackJson) {
+        if (string.IsNullOrEmpty(placementId) || string.IsNullOrEmpty(callbackJson)) {
+            return;
+        }
+        if (!sRevenueByPlacement.TryGetValue(placementId, out IATAdRevenueListener target) || target == null) {
+            return;
+        }
+        try {
+            var info = new ATCallbackInfo(callbackJson);
+            target.onAdRevenuePaid(placementId, info);
+            Debug.Log("Unity: ATBannerAdWrapper notifyAdRevenuePaidFromCallbackJson: onAdRevenuePaid placementId=" + placementId + " rawJson=" + callbackJson);
+        } catch (Exception e) {
+            Debug.Log("Unity: ATBannerAdWrapper notifyAdRevenuePaidFromCallbackJson: " + e.Message);
+        }
+    }
+
 }
