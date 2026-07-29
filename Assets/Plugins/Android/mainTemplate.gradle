@@ -14,6 +14,7 @@ dependencies {
     implementation 'com.anythink.sdk:debugger-ui-tpn:1.1.5' // Assets/Plugins/Android/Editor/Dependencies.xml:6
     implementation 'com.google.android.gms:play-services-ads:25.3.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/admob/Editor/Dependencies.xml:4
     implementation 'com.smartdigimkttech.sdk:smartdigimkttech-sdk:6.5.68' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/secmtp_base/sdm/Editor/Dependencies.xml:4
+    // implementation 'com.unity3d.ads:unity-ads:[4.19.0,4.20[' // Packages/com.unity.ads/Editor/Source/Dependencies.xml:7
     implementation 'com.unity3d.ads:unity-ads:4.18.0' // Assets/TpnPlugin/AnyThinkAds/Plugins/Android/NonChina/mediation/unityads/Editor/Dependencies.xml:4
 // Android Resolver Dependencies End
 **DEPS**
@@ -26,10 +27,9 @@ configurations.all {
 
 // Android Resolver Exclusions Start
 android {
-    namespace "com.unity3d.player"
     ndkPath "**NDKPATH**"
     ndkVersion "**NDKVERSION**"
-  packaging {
+  packagingOptions {
       exclude ('/lib/arm64-v8a/*' + '*')
       exclude ('/lib/armeabi/*' + '*')
       exclude ('/lib/mips/*' + '*')
@@ -41,6 +41,7 @@ android {
 // Android Resolver Exclusions End
 android {
     compileSdk **APIVERSION**
+    namespace "com.unity3d.player"
     buildToolsVersion '**BUILDTOOLS**'
 
     compileOptions {

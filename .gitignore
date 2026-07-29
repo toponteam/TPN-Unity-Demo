@@ -70,3 +70,13 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Unity build temporary directory
+.utmp/
+
+# Build logs
+build*.log
+
+# Backup files from Android Resolver
+*.backup
+*.backup.meta
